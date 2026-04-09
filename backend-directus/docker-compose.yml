@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: jujuy247_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  directus:
+    image: directus/directus:10.13.1
+    container_name: jujuy247_directus
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8055:8055"
+    environment:
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+
+      DB_CLIENT: pg
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      PUBLIC_URL: ${PUBLIC_URL}
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: ${CORS_ORIGIN}
+
+      # Optional (uncomment if you want uploads on disk)
+      # STORAGE_LOCATIONS: local
+      # STORAGE_LOCAL_DRIVER: local
+      # STORAGE_LOCAL_ROOT: /directus/uploads
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: jujuy247_caddy
+    restart: unless-stopped
+    profiles:
+      - proxy
+    depends_on:
+      - directus
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DIRECTUS_DOMAIN: ${DIRECTUS_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  db_data:
+  directus_uploads:
+  directus_extensions:
+  caddy_data:
+  caddy_config:

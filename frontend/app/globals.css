@@ -1,0 +1,19 @@
+/* Minimal responsive helpers for header */
+
+.headerDesktop {
+  display: block;
+}
+
+.headerMobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .headerDesktop {
+    display: none;
+  }
+
+  .headerMobile {
+    display: block;
+  }
+}

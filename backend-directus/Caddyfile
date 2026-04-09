@@ -1,0 +1,8 @@
+{
+  email admin@jujuy247.com
+}
+
+{$DIRECTUS_DOMAIN} {
+  encode gzip
+  reverse_proxy directus:8055
+}
