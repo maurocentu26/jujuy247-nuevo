@@ -305,7 +305,7 @@ export async function getOtherArticlesInCategory({ categoryId, excludeId, limit 
 }
 
 export async function getArticleBySlug(slug) {
-  const fields = [
+  const baseFields = [
     'id',
     'title',
     'slug',
@@ -326,17 +326,31 @@ export async function getArticleBySlug(slug) {
     'category.name',
     'tags.id',
     'tags.name',
-  ].join(',');
+  ];
+
+  const fieldsWithSource = [...baseFields, 'source_name', 'source_url'].join(',');
+  const fieldsWithoutSource = baseFields.join(',');
 
   const filter = encodeURIComponent(JSON.stringify({
     slug: { _eq: slug },
     status: { _eq: 'published' },
   }));
 
-  const url = directusUrl(`/items/articles?fields=${encodeURIComponent(fields)}&limit=1&filter=${filter}`);
-  const json = await fetchJson(url);
-  const items = json.data ?? [];
-  return items[0] ?? null;
+  const urlWithSource = directusUrl(`/items/articles?fields=${encodeURIComponent(fieldsWithSource)}&limit=1&filter=${filter}`);
+
+  try {
+    const json = await fetchJson(urlWithSource);
+    const items = json.data ?? [];
+    return items[0] ?? null;
+  } catch {
+    // Keep compatibility if source fields are not yet present in Directus schema.
+    const urlWithoutSource = directusUrl(
+      `/items/articles?fields=${encodeURIComponent(fieldsWithoutSource)}&limit=1&filter=${filter}`
+    );
+    const json = await fetchJson(urlWithoutSource);
+    const items = json.data ?? [];
+    return items[0] ?? null;
+  }
 }
 
 export function getCanonicalUrlForArticle(article) {

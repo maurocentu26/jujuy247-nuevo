@@ -59,6 +59,14 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
   const containerRef = useRef(null);
   const intervalRef = useRef(null);
 
+  const scrollToPage = (nextIndex, behavior = 'smooth') => {
+    const el = containerRef.current;
+    if (!el) return;
+    const page = el.querySelector(`[data-page-idx="${nextIndex}"]`);
+    if (!page) return;
+    el.scrollTo({ left: page.offsetLeft, behavior });
+  };
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
 
@@ -95,12 +103,9 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
   }, [pages.length, isDesktop]);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const slide = el.querySelector(`[data-page-idx="${index}"]`);
-    if (slide && typeof slide.scrollIntoView === 'function') {
-      slide.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-    }
+    // Avoid scrollIntoView(), which can move the whole page viewport.
+    // We only want horizontal movement inside the carousel container.
+    scrollToPage(index, 'smooth');
   }, [index]);
 
   if (!pages.length) return null;
@@ -108,7 +113,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
   return (
     <section
       style={{
-        border: '1px solid #e9ebef',
+        border: '1px solid #eceff3',
         borderRadius: 14,
         overflow: 'hidden',
         background: '#f7f8fa',
@@ -124,8 +129,8 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 4, height: 24, borderRadius: 999, background: '#e11d2f' }} />
-          <h2 style={{ margin: 0, fontSize: 34, fontWeight: 900, letterSpacing: 0.2 }}>Videos</h2>
+          <span style={{ width: 4, height: 24, borderRadius: 999, background: '#ef2a2a' }} />
+          <h2 style={{ margin: 0, fontSize: 34, fontWeight: 900, letterSpacing: 0.2, color: '#f8fafc' }}>Videos</h2>
         </div>
 
         <a
@@ -191,8 +196,8 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
                       position: 'relative',
                       aspectRatio: '16 / 9',
                       background: video.thumbnailUrl
-                        ? `linear-gradient(180deg, rgba(8,15,25,0.08), rgba(8,15,25,0.42)), url(${video.thumbnailUrl})`
-                        : 'linear-gradient(180deg, #c7cbd1, #b8bdc5)',
+                        ? `linear-gradient(180deg, rgba(7,11,16,0.14), rgba(7,11,16,0.52)), url(${video.thumbnailUrl})`
+                        : 'linear-gradient(180deg, #30291b, #17120a)',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       display: 'flex',

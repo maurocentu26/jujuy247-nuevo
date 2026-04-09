@@ -81,7 +81,7 @@ export default async function HomePage({ searchParams }) {
   );
 
   return (
-    <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
+    <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
       <section className="youtubeVideoStrip">
@@ -132,7 +132,7 @@ export default async function HomePage({ searchParams }) {
                   </article>
 
                   <aside className="newsSideRail">
-                    <div className="newsSideTitle">Lo ultimo</div>
+                    <div className="newsSideTitle">Lo último</div>
                     <div className="newsSideList">
                       {sideItems.map((a) => {
                         const sideImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';

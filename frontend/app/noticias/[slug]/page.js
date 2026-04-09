@@ -73,6 +73,8 @@ export default async function ArticlePage({ params }) {
   const site = getSiteUrl();
   const imageFileId = getDirectusFileId(article.seo_image) || getDirectusFileId(article.cover_image);
   const imageUrl = imageFileId ? directusAssetUrl(imageFileId) : '';
+  const sourceName = typeof article.source_name === 'string' ? article.source_name.trim() : '';
+  const sourceUrl = typeof article.source_url === 'string' ? article.source_url.trim() : '';
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -104,6 +106,19 @@ export default async function ArticlePage({ params }) {
       <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
         {article.category?.name ? <span>{article.category.name}</span> : <span>Sin categoría</span>}
         {article.published_at ? <span> · {new Date(article.published_at).toLocaleString('es-AR')}</span> : null}
+        {sourceName ? (
+          <span>
+            {' '}
+            · Fuente:{' '}
+            {sourceUrl ? (
+              <a href={sourceUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>
+                {sourceName}
+              </a>
+            ) : (
+              sourceName
+            )}
+          </span>
+        ) : null}
       </div>
 
       {imageUrl ? (
@@ -134,9 +149,30 @@ export default async function ArticlePage({ params }) {
                   {children}
                 </a>
               ),
-              img: ({ ...props }) => (
-                <img {...props} alt={props.alt || ''} style={{ maxWidth: '100%', height: 'auto', borderRadius: 12 }} />
-              ),
+              img: ({ ...props }) => {
+                const credit = typeof props.title === 'string' ? props.title.trim() : '';
+                return (
+                  <figure style={{ margin: '14px 0' }}>
+                    <img
+                      {...props}
+                      alt={props.alt || ''}
+                      style={{ maxWidth: '100%', height: 'auto', borderRadius: 12, display: 'block' }}
+                    />
+                    {credit ? (
+                      <figcaption
+                        style={{
+                          marginTop: 6,
+                          fontSize: 12,
+                          lineHeight: 1.4,
+                          color: '#6b7280',
+                        }}
+                      >
+                        {credit}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                );
+              },
               p: ({ children, ...props }) => (
                 <p {...props} style={{ margin: '12px 0' }}>
                   {children}
