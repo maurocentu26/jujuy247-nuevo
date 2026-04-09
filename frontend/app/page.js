@@ -7,9 +7,11 @@ import {
   getFrontPageArticleInCategory,
   getOtherArticlesInCategory,
   getLatestArticles,
+  getAds,
 } from '../lib/directus';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
+import AdCarousel from './components/AdCarousel';
 import { Fragment } from 'react';
 
 export const dynamic = 'force-dynamic';
@@ -40,10 +42,16 @@ export default async function HomePage({ searchParams }) {
     youtubeChannelId = await getChannelIdForHandle({ apiKey: youtubeApiKey, handle: youtubeChannelHandle }).catch(() => '');
   }
 
-  const [liveVideo, latestVideos, latestHeadlines] = await Promise.all([
+  const loadAdsForPosition = (position) => getAds({ position }).catch(() => []);
+
+  const [liveVideo, latestVideos, latestHeadlines, adsTop, adsBottom, adsMidRight, adsMidLeft] = await Promise.all([
     getLiveVideoForChannel({ apiKey: youtubeApiKey, channelId: youtubeChannelId }).catch(() => null),
     getLatestChannelVideos({ apiKey: youtubeApiKey, channelId: youtubeChannelId, limit: 10 }).catch(() => []),
-    getLatestArticles({ limit: 5 }).catch(() => []),
+    getLatestArticles({ limit: 10 }).catch(() => []),
+    loadAdsForPosition('top'),
+    loadAdsForPosition('bottom'),
+    loadAdsForPosition('mid-right'),
+    loadAdsForPosition('mid-left'),
   ]);
 
   const sp = await Promise.resolve(searchParams);
@@ -102,6 +110,12 @@ export default async function HomePage({ searchParams }) {
 
       <div className="homeMainGrid">
         <section className="newsBlocksWrap">
+          {adsTop.length > 0 && (
+            <div style={{ marginBottom: 28 }}>
+              <AdCarousel ads={adsTop} variant="wide" />
+            </div>
+          )}
+
           {sectionsSorted.length === 0 ? (
             <div style={{ padding: 16, border: '1px solid #e5e5e5', borderRadius: 12 }}>
               {categorySlug
@@ -196,11 +210,11 @@ export default async function HomePage({ searchParams }) {
               <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>Lo último</h2>
             </div>
 
-            <div style={{ display: 'grid', gap: 10 }}>
+            <div className="latestNewsList" style={{ display: 'grid', gap: 10 }}>
               {latestHeadlines.map((a) => {
                 const thumbUrl = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
                 return (
-                  <Link key={a.id} href={`/noticias/${a.slug}`} className="newsSideItem">
+                  <Link key={a.id} href={`/noticias/${a.slug}`} className="newsSideItem latestNewsItem">
                     <div
                       className="newsSideThumb"
                       style={{
@@ -219,8 +233,26 @@ export default async function HomePage({ searchParams }) {
               })}
             </div>
           </section>
+
+          {adsMidRight.length > 0 && (
+            <section style={{ marginTop: 20 }}>
+              <AdCarousel ads={adsMidRight} variant="sidebar" />
+            </section>
+          )}
         </aside>
       </div>
+
+      {adsMidLeft.length > 0 && (
+        <div style={{ marginTop: 28, marginBottom: 28 }}>
+          <AdCarousel ads={adsMidLeft} variant="wide" />
+        </div>
+      )}
+
+      {adsBottom.length > 0 && (
+        <div style={{ marginTop: 28 }}>
+          <AdCarousel ads={adsBottom} variant="wide" />
+        </div>
+      )}
     </main>
   );
 }

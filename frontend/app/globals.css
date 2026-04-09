@@ -138,6 +138,10 @@
   gap: 10px;
 }
 
+.latestNewsList .latestNewsItem:nth-child(n + 11) {
+  display: none;
+}
+
 .newsSideItem {
   display: grid;
   grid-template-columns: 90px minmax(0, 1fr);
@@ -257,6 +261,10 @@
 
   .newsTopLayout {
     grid-template-columns: 1fr;
+  }
+
+  .latestNewsList .latestNewsItem:nth-child(n + 8) {
+    display: none;
   }
 
   .newsCardsRow {

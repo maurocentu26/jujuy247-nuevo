@@ -358,3 +358,23 @@ export function getCanonicalUrlForArticle(article) {
   if (article.seo_canonical_url) return article.seo_canonical_url;
   return siteUrl(`/noticias/${article.slug}`);
 }
+
+export async function getAds({ position } = {}) {
+  const fields = [
+    'id',
+    'position',
+    'photos',
+    'photos.id',
+    'photos.directus_files_id',
+    'photos.directus_files_id.id',
+  ].join(',');
+  const filterObject = {};
+  if (position) {
+    filterObject.position = { _eq: position };
+  }
+  const filter = encodeURIComponent(JSON.stringify(filterObject));
+  const filterQuery = Object.keys(filterObject).length ? `&filter=${filter}` : '';
+  const url = directusUrl(`/items/ads?fields=${encodeURIComponent(fields)}&sort=id${filterQuery}`);
+  const json = await fetchJson(url);
+  return json.data ?? [];
+}
