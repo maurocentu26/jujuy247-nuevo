@@ -3,16 +3,30 @@ import {
   directusAssetUrl,
   getDirectusFileId,
   getCategoryBySlug,
-  getLatestArticles,
   getTopCategoriesWithRecentArticles,
   getFrontPageArticleInCategory,
   getOtherArticlesInCategory,
 } from '../lib/directus';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
-import LatestNewsCarousel from './components/LatestNewsCarousel';
 
 export const dynamic = 'force-dynamic';
+
+function formatRelativeTime(dateString) {
+  if (!dateString) return 'Ahora';
+
+  const ms = Date.now() - new Date(dateString).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return 'Ahora';
+
+  const mins = Math.floor(ms / 60000);
+  if (mins < 60) return `Hace ${Math.max(mins, 1)} min`;
+
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `Hace ${hours} h`;
+
+  const days = Math.floor(hours / 24);
+  return `Hace ${days} d`;
+}
 
 export default async function HomePage({ searchParams }) {
   const youtubeChannelUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_URL || '#';
@@ -28,23 +42,6 @@ export default async function HomePage({ searchParams }) {
     getLiveVideoForChannel({ apiKey: youtubeApiKey, channelId: youtubeChannelId }).catch(() => null),
     getLatestChannelVideos({ apiKey: youtubeApiKey, channelId: youtubeChannelId, limit: 10 }).catch(() => []),
   ]);
-
-  const latestArticlesRaw = await getLatestArticles({ limit: 10 }).catch(() => []);
-  const latestArticles = Array.isArray(latestArticlesRaw)
-    ? latestArticlesRaw
-        .map((a) => {
-          const coverFileId = getDirectusFileId(a?.cover_image);
-          return {
-            id: a?.id,
-            slug: a?.slug,
-            title: a?.title,
-            excerpt: a?.excerpt,
-            categoryName: a?.category?.name || '',
-            coverUrl: coverFileId ? directusAssetUrl(coverFileId) : '',
-          };
-        })
-        .filter((a) => a.id && a.slug && a.title)
-    : [];
 
   const sp = await Promise.resolve(searchParams);
   const categoryParam = sp?.category;
@@ -87,13 +84,11 @@ export default async function HomePage({ searchParams }) {
     <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
-      <LatestNewsCarousel items={latestArticles} />
-
-      <section className="youtubeAsideWrap">
+      <section className="youtubeVideoStrip">
         <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
       </section>
 
-      <section style={{ marginTop: 24, display: 'grid', gap: 34 }}>
+      <section className="newsBlocksWrap">
         {sections.length === 0 ? (
           <div style={{ padding: 16, border: '1px solid #e5e5e5', borderRadius: 12 }}>
             {categorySlug
@@ -102,106 +97,93 @@ export default async function HomePage({ searchParams }) {
           </div>
         ) : (
           sections.map(({ category: c, featured, list, isFeaturedFrontPage }) => {
-            const count = (featured ? 1 : 0) + (Array.isArray(list) ? list.length : 0);
-            const hasList = Array.isArray(list) && list.length > 0;
+            const sideItems = Array.isArray(list) ? list.slice(0, 5) : [];
+            const cards = Array.isArray(list) ? list.slice(0, 3) : [];
+
+            const heroImage = featured?.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
 
             return (
-              <div key={c.id}>
-                <div style={{ paddingBottom: 10, borderBottom: '2px solid #e5e5e5' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-                    <h2 style={{ margin: 0, fontSize: 'clamp(18px, 3.5vw, 22px)', letterSpacing: 0.2 }}>{c.name}</h2>
-                    <span style={{ fontSize: 12, opacity: 0.65 }}>{count} noticias</span>
-                  </div>
-                </div>
+              <section key={c.id} className="newsBlock">
+                <header className="newsBlockHeader">
+                  <h2>{c.name}</h2>
+                  <span>{(featured ? 1 : 0) + sideItems.length} noticias</span>
+                </header>
 
-                <div
-                  style={{
-                    marginTop: 12,
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 18,
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <div style={{ minWidth: 0, flex: '1 1 560px' }}>
+                <div className="newsTopLayout">
+                  <article className="newsHeroCard">
                     {featured ? (
-                      <article style={{ borderRadius: 12 }}>
-                        {getDirectusFileId(featured.cover_image) ? (
-                          <Link href={`/noticias/${featured.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                            <img
-                              src={directusAssetUrl(getDirectusFileId(featured.cover_image))}
-                              alt={featured.title}
-                              loading="lazy"
+                      <Link
+                        href={`/noticias/${featured.slug}`}
+                        className="newsHeroLink"
+                        style={{
+                          backgroundImage: heroImage
+                            ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.86) 70%), url(${heroImage})`
+                            : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
+                        }}
+                      >
+                        <div className="newsHeroBadge">{isFeaturedFrontPage ? 'Ultima hora' : 'Destacado'}</div>
+                        <h3>{featured.title}</h3>
+                        {featured.excerpt ? <p>{featured.excerpt}</p> : null}
+                        <div className="newsHeroMeta">{formatRelativeTime(featured.published_at)} · Leer mas</div>
+                      </Link>
+                    ) : (
+                      <div className="newsHeroLink">No hay noticias en esta categoría.</div>
+                    )}
+                  </article>
+
+                  <aside className="newsSideRail">
+                    <div className="newsSideTitle">Lo ultimo</div>
+                    <div className="newsSideList">
+                      {sideItems.map((a) => {
+                        const sideImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+
+                        return (
+                          <Link key={a.id} href={`/noticias/${a.slug}`} className="newsSideItem">
+                            <div
+                              className="newsSideThumb"
                               style={{
-                                width: '100%',
-                                height: 'auto',
-                                aspectRatio: '16 / 9',
-                                maxHeight: 360,
-                                objectFit: 'cover',
-                                borderRadius: 12,
-                                display: 'block',
+                                backgroundImage: sideImage
+                                  ? `url(${sideImage})`
+                                  : 'linear-gradient(180deg, rgba(10,20,36,0.18), rgba(10,20,36,0.65))',
                               }}
                             />
+                            <div className="newsSideBody">
+                              <div className="newsSideCategory">{c.name}</div>
+                              <div className="newsSideHeadline">{a.title}</div>
+                              <div className="newsSideTime">{formatRelativeTime(a.published_at)}</div>
+                            </div>
                           </Link>
-                        ) : null}
-
-                        <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.2, opacity: 0.8 }}>
-                            {isFeaturedFrontPage ? 'DESTACADO' : 'ÚLTIMA'}
-                          </span>
-                          <h3 style={{ margin: 0, fontSize: 'clamp(20px, 4.5vw, 26px)', lineHeight: 1.15 }}>
-                            <Link href={`/noticias/${featured.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                              {featured.title}
-                            </Link>
-                          </h3>
-                        </div>
-
-                        {featured.excerpt ? (
-                          <p style={{ margin: '10px 0 0', opacity: 0.85, fontSize: 'clamp(14px, 3.2vw, 16px)' }}>{featured.excerpt}</p>
-                        ) : null}
-                      </article>
-                    ) : (
-                      <div style={{ padding: 12, opacity: 0.8, fontSize: 13 }}>No hay noticias en esta categoría.</div>
-                    )}
-                  </div>
-
-                  {hasList ? (
-                    <aside style={{ minWidth: 0, flex: '1 1 260px', maxWidth: 360 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 0.2, marginBottom: 10 }}>
-                        Últimas
-                      </div>
-
-                      <div style={{ display: 'grid', gap: 10 }}>
-                        {list.map((a) => (
-                          <div key={a.id} style={{ minWidth: 0 }}>
-                            <Link href={`/noticias/${a.slug}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                              <div style={{ fontSize: 14, lineHeight: 1.25, fontWeight: 650 }}>
-                                {a.title}
-                                {a.front_page ? <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>(portada)</span> : null}
-                              </div>
-                            </Link>
-                            {a.excerpt ? (
-                              <div
-                                style={{
-                                  marginTop: 4,
-                                  fontSize: 12,
-                                  opacity: 0.75,
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                }}
-                              >
-                                {a.excerpt}
-                              </div>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    </aside>
-                  ) : null}
+                        );
+                      })}
+                    </div>
+                  </aside>
                 </div>
-              </div>
+
+                {cards.length ? (
+                  <div className="newsCardsRow">
+                    {cards.map((a) => {
+                      const cardImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+
+                      return (
+                        <Link key={a.id} href={`/noticias/${a.slug}`} className="newsMiniCard">
+                          <div
+                            className="newsMiniCardImage"
+                            style={{
+                              backgroundImage: cardImage
+                                ? `url(${cardImage})`
+                                : 'linear-gradient(180deg, rgba(12,25,44,0.22), rgba(12,25,44,0.68))',
+                            }}
+                          />
+                          <div className="newsMiniCardBody">
+                            <div className="newsMiniCardCategory">{c.name}</div>
+                            <div className="newsMiniCardTitle">{a.title}</div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </section>
             );
           })
         )}
