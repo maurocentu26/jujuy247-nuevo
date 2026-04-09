@@ -8,6 +8,19 @@
   display: none;
 }
 
+.youtubeAsideWrap {
+  width: 100%;
+  margin: 8px 0 18px;
+}
+
+@media (min-width: 920px) {
+  .youtubeAsideWrap {
+    width: min(100%, 360px);
+    margin-left: 0;
+    margin-right: auto;
+  }
+}
+
 @media (max-width: 640px) {
   .headerDesktop {
     display: none;

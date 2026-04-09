@@ -20,14 +20,25 @@ function formatTime(date) {
 }
 
 export default function Clock({ label = 'San Salvador de Jujuy' }) {
+  const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
+    setMounted(true);
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
 
   const time = useMemo(() => formatTime(now), [now]);
+
+  if (!mounted) {
+    return (
+      <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', whiteSpace: 'nowrap' }}>
+        {label ? <span style={{ opacity: 0.8 }}>{label}</span> : null}
+        <span style={{ fontWeight: 700 }}>--:--</span>
+      </span>
+    );
+  }
 
   return (
     <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', whiteSpace: 'nowrap' }}>

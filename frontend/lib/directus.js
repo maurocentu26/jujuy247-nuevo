@@ -49,23 +49,34 @@ export async function getTopCategoriesWithRecentArticles({
   limitCategories = 5,
   limitArticles = 250,
 } = {}) {
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-
   const fields = ['category.id', 'category.name', 'category.slug', 'published_at'].join(',');
-  const filter = encodeURIComponent(
-    JSON.stringify({
+
+  async function fetchCategoryItems({ includeSinceFilter }) {
+    const baseFilter = {
       status: { _eq: 'published' },
-      published_at: { _gte: since },
       category: { id: { _nnull: true } },
-    })
-  );
+    };
 
-  const url = directusUrl(
-    `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at&limit=${limitArticles}&filter=${filter}`
-  );
+    if (includeSinceFilter) {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      baseFilter.published_at = { _gte: since };
+    }
 
-  const json = await fetchJson(url);
-  const items = json.data ?? [];
+    const filter = encodeURIComponent(JSON.stringify(baseFilter));
+    const url = directusUrl(
+      `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at&limit=${limitArticles}&filter=${filter}`
+    );
+
+    const json = await fetchJson(url);
+    return json.data ?? [];
+  }
+
+  let items = await fetchCategoryItems({ includeSinceFilter: true });
+
+  // Fallback when there are no recent posts in the configured window.
+  if (items.length === 0) {
+    items = await fetchCategoryItems({ includeSinceFilter: false });
+  }
 
   const byCategoryId = new Map();
   for (const item of items) {

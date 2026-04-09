@@ -8,10 +8,8 @@ import {
   getFrontPageArticleInCategory,
   getOtherArticlesInCategory,
 } from '../lib/directus';
-import AudioPlayer from './components/AudioPlayer';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
-import YouTubeLiveBlock from './components/YouTubeLiveBlock';
 import LatestNewsCarousel from './components/LatestNewsCarousel';
 
 export const dynamic = 'force-dynamic';
@@ -91,19 +89,9 @@ export default async function HomePage({ searchParams }) {
 
       <LatestNewsCarousel items={latestArticles} />
 
-      <header style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 980px', minWidth: 260 }}>
-          {liveVideo?.id ? (
-            <YouTubeLiveBlock liveVideo={liveVideo} videos={latestVideos} channelUrl={youtubeChannelUrl} />
-          ) : (
-            <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
-          )}
-        </div>
-
-        <div style={{ flex: '1 1 980px', minWidth: 260, maxWidth: 980 }}>
-          <AudioPlayer />
-        </div>
-      </header>
+      <section className="youtubeAsideWrap">
+        <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+      </section>
 
       <section style={{ marginTop: 24, display: 'grid', gap: 34 }}>
         {sections.length === 0 ? (

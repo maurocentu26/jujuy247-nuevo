@@ -12,7 +12,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body style={{ margin: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}>
+      <body
+        suppressHydrationWarning
+        style={{ margin: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}
+      >
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
           <div style={{ flex: '1 0 auto' }}>{children}</div>
