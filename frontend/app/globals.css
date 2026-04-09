@@ -17,9 +17,21 @@
   margin: 8px 0 22px;
 }
 
-.newsBlocksWrap {
-  margin-top: 20px;
+.homeMainGrid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+.latestSidebar {
+  position: static;
+}
+
+.newsBlocksWrap {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 28px;
 }
 
@@ -230,6 +242,19 @@
 }
 
 @media (max-width: 980px) {
+  .homeMainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .latestSidebar {
+    position: static;
+  }
+
+  .newsBlocksWrap {
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+  }
+
   .newsTopLayout {
     grid-template-columns: 1fr;
   }

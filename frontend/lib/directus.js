@@ -24,15 +24,15 @@ export function getDirectusFileId(fileField) {
 }
 
 export async function getCategories({ limit = 10 } = {}) {
-  const fields = ['id', 'name', 'slug'].join(',');
-  const url = directusUrl(`/items/categories?fields=${encodeURIComponent(fields)}&sort=name&limit=${limit}`);
+  const fields = ['id', 'name', 'slug', 'position'].join(',');
+  const url = directusUrl(`/items/categories?fields=${encodeURIComponent(fields)}&sort=position,name&limit=${limit}`);
   const json = await fetchJson(url);
   return json.data ?? [];
 }
 
 export async function getCategoryBySlug(slug) {
   if (!slug) return null;
-  const fields = ['id', 'name', 'slug'].join(',');
+  const fields = ['id', 'name', 'slug', 'position'].join(',');
   const filter = encodeURIComponent(
     JSON.stringify({
       slug: { _eq: slug },
@@ -49,7 +49,7 @@ export async function getTopCategoriesWithRecentArticles({
   limitCategories = 5,
   limitArticles = 250,
 } = {}) {
-  const fields = ['category.id', 'category.name', 'category.slug', 'published_at'].join(',');
+  const fields = ['category.id', 'category.name', 'category.slug', 'category.position', 'published_at'].join(',');
 
   async function fetchCategoryItems({ includeSinceFilter }) {
     const baseFilter = {

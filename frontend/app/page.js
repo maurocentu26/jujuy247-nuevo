@@ -83,133 +83,144 @@ export default async function HomePage({ searchParams }) {
     })
   );
 
+  const sectionsSorted = [...sections].sort((a, b) => {
+    const aPos = Number(a?.category?.position);
+    const bPos = Number(b?.category?.position);
+    const aHasPos = Number.isFinite(aPos) && aPos > 0;
+    const bHasPos = Number.isFinite(bPos) && bPos > 0;
+
+    if (aHasPos && bHasPos && aPos !== bPos) return aPos - bPos;
+    if (aHasPos && !bHasPos) return -1;
+    if (!aHasPos && bHasPos) return 1;
+
+    return String(a?.category?.name || '').localeCompare(String(b?.category?.name || ''), 'es');
+  });
+
   return (
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
-      {latestHeadlines.length ? (
-        <section
-          aria-label="Lo último"
-          style={{
-            marginBottom: 22,
-            border: '1px solid #eceff3',
-            borderRadius: 14,
-            background: '#f7f8fa',
-            padding: 12,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <span style={{ width: 4, height: 24, borderRadius: 999, background: '#ef2a2a' }} />
-            <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>Lo último</h2>
-          </div>
+      <div className="homeMainGrid">
+        <section className="newsBlocksWrap">
+          {sectionsSorted.length === 0 ? (
+            <div style={{ padding: 16, border: '1px solid #e5e5e5', borderRadius: 12 }}>
+              {categorySlug
+                ? 'Categoría no encontrada (o sin permisos). Probá seleccionar otra categoría.'
+                : 'No hay categorías o noticias todavía. Cargá contenido desde el admin.'}
+            </div>
+          ) : (
+            sectionsSorted.map(({ category: c, featured, list, isFeaturedFrontPage }, sectionIndex) => {
+              const cards = Array.isArray(list) ? list.slice(0, 3) : [];
 
-          <div style={{ display: 'grid', gap: 10 }}>
-            {latestHeadlines.map((a) => {
-              const thumbUrl = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+              const heroImage = featured?.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
+
               return (
-                <Link key={a.id} href={`/noticias/${a.slug}`} className="newsSideItem">
-                  <div
-                    className="newsSideThumb"
-                    style={{
-                      backgroundImage: thumbUrl
-                        ? `url(${thumbUrl})`
-                        : 'linear-gradient(180deg, rgba(10,20,36,0.18), rgba(10,20,36,0.65))',
-                    }}
-                  />
-                  <div className="newsSideBody">
-                    <div className="newsSideCategory">{a.category?.name || 'General'}</div>
-                    <div className="newsSideHeadline">{a.title}</div>
-                    <div className="newsSideTime">{formatRelativeTime(a.published_at)}</div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+                <Fragment key={c.id}>
+                  <section className="newsBlock">
+                    <header className="newsBlockHeader">
+                      <h2>{c.name}</h2>
+                      <span>{(featured ? 1 : 0) + list.length} noticias</span>
+                    </header>
 
-      <section className="newsBlocksWrap">
-        {sections.length === 0 ? (
-          <div style={{ padding: 16, border: '1px solid #e5e5e5', borderRadius: 12 }}>
-            {categorySlug
-              ? 'Categoría no encontrada (o sin permisos). Probá seleccionar otra categoría.'
-              : 'No hay categorías o noticias todavía. Cargá contenido desde el admin.'}
-          </div>
-        ) : (
-          sections.map(({ category: c, featured, list, isFeaturedFrontPage }, sectionIndex) => {
-            const sideItems = Array.isArray(list) ? list.slice(0, 5) : [];
-            const cards = Array.isArray(list) ? list.slice(0, 3) : [];
-
-            const heroImage = featured?.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
-
-            return (
-              <Fragment key={c.id}>
-                <section className="newsBlock">
-                  <header className="newsBlockHeader">
-                    <h2>{c.name}</h2>
-                    <span>{(featured ? 1 : 0) + sideItems.length} noticias</span>
-                  </header>
-
-                  <div className="newsTopLayout" style={{ gridTemplateColumns: '1fr' }}>
-                    <article className="newsHeroCard">
-                      {featured ? (
-                        <Link
-                          href={`/noticias/${featured.slug}`}
-                          className="newsHeroLink"
-                          style={{
-                            backgroundImage: heroImage
-                              ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.86) 70%), url(${heroImage})`
-                              : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
-                          }}
-                        >
-                          <div className="newsHeroBadge">{isFeaturedFrontPage ? 'Ultima hora' : 'Destacado'}</div>
-                          <h3>{featured.title}</h3>
-                          {featured.excerpt ? <p>{featured.excerpt}</p> : null}
-                          <div className="newsHeroMeta">{formatRelativeTime(featured.published_at)} · Leer mas</div>
-                        </Link>
-                      ) : (
-                        <div className="newsHeroLink">No hay noticias en esta categoría.</div>
-                      )}
-                    </article>
-
-                  </div>
-
-                  {cards.length ? (
-                    <div className="newsCardsRow">
-                      {cards.map((a) => {
-                        const cardImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
-
-                        return (
-                          <Link key={a.id} href={`/noticias/${a.slug}`} className="newsMiniCard">
-                            <div
-                              className="newsMiniCardImage"
-                              style={{
-                                backgroundImage: cardImage
-                                  ? `url(${cardImage})`
-                                  : 'linear-gradient(180deg, rgba(12,25,44,0.22), rgba(12,25,44,0.68))',
-                              }}
-                            />
-                            <div className="newsMiniCardBody">
-                              <div className="newsMiniCardCategory">{c.name}</div>
-                              <div className="newsMiniCardTitle">{a.title}</div>
-                            </div>
+                    <div className="newsTopLayout" style={{ gridTemplateColumns: '1fr' }}>
+                      <article className="newsHeroCard">
+                        {featured ? (
+                          <Link
+                            href={`/noticias/${featured.slug}`}
+                            className="newsHeroLink"
+                            style={{
+                              backgroundImage: heroImage
+                                ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.86) 70%), url(${heroImage})`
+                                : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
+                            }}
+                          >
+                            <div className="newsHeroBadge">{isFeaturedFrontPage ? 'Ultima hora' : 'Destacado'}</div>
+                            <h3>{featured.title}</h3>
+                            {featured.excerpt ? <p>{featured.excerpt}</p> : null}
+                            <div className="newsHeroMeta">{formatRelativeTime(featured.published_at)} · Leer mas</div>
                           </Link>
-                        );
-                      })}
+                        ) : (
+                          <div className="newsHeroLink">No hay noticias en esta categoría.</div>
+                        )}
+                      </article>
                     </div>
-                  ) : null}
-                </section>
 
-                {sectionIndex === 0 ? (
-                  <section className="youtubeVideoStrip">
-                    <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+                    {cards.length ? (
+                      <div className="newsCardsRow">
+                        {cards.map((a) => {
+                          const cardImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+
+                          return (
+                            <Link key={a.id} href={`/noticias/${a.slug}`} className="newsMiniCard">
+                              <div
+                                className="newsMiniCardImage"
+                                style={{
+                                  backgroundImage: cardImage
+                                    ? `url(${cardImage})`
+                                    : 'linear-gradient(180deg, rgba(12,25,44,0.22), rgba(12,25,44,0.68))',
+                                }}
+                              />
+                              <div className="newsMiniCardBody">
+                                <div className="newsMiniCardCategory">{c.name}</div>
+                                <div className="newsMiniCardTitle">{a.title}</div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ) : null}
                   </section>
-                ) : null}
-              </Fragment>
-            );
-          })
-        )}
-      </section>
+
+                  {sectionIndex === 0 ? (
+                    <section className="youtubeVideoStrip" style={{ gridColumn: '1 / -1' }}>
+                      <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+                    </section>
+                  ) : null}
+                </Fragment>
+              );
+            })
+          )}
+        </section>
+
+        <aside className="latestSidebar" aria-label="Lo último">
+          <section
+            style={{
+              border: '1px solid #eceff3',
+              borderRadius: 14,
+              background: '#f7f8fa',
+              padding: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <span style={{ width: 4, height: 24, borderRadius: 999, background: '#ef2a2a' }} />
+              <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>Lo último</h2>
+            </div>
+
+            <div style={{ display: 'grid', gap: 10 }}>
+              {latestHeadlines.map((a) => {
+                const thumbUrl = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+                return (
+                  <Link key={a.id} href={`/noticias/${a.slug}`} className="newsSideItem">
+                    <div
+                      className="newsSideThumb"
+                      style={{
+                        backgroundImage: thumbUrl
+                          ? `url(${thumbUrl})`
+                          : 'linear-gradient(180deg, rgba(10,20,36,0.18), rgba(10,20,36,0.65))',
+                      }}
+                    />
+                    <div className="newsSideBody">
+                      <div className="newsSideCategory">{a.category?.name || 'General'}</div>
+                      <div className="newsSideHeadline">{a.title}</div>
+                      <div className="newsSideTime">{formatRelativeTime(a.published_at)}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        </aside>
+      </div>
     </main>
   );
 }
