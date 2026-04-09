@@ -44,11 +44,12 @@ export default async function HomePage({ searchParams }) {
 
   const loadAdsForPosition = (position) => getAds({ position }).catch(() => []);
 
-  const [liveVideo, latestVideos, latestHeadlines, adsTop, adsBottom, adsMidRight, adsMidLeft] = await Promise.all([
+  const [liveVideo, latestVideos, latestHeadlines, adsTop, adsMid, adsBottom, adsMidRight, adsMidLeft] = await Promise.all([
     getLiveVideoForChannel({ apiKey: youtubeApiKey, channelId: youtubeChannelId }).catch(() => null),
     getLatestChannelVideos({ apiKey: youtubeApiKey, channelId: youtubeChannelId, limit: 10 }).catch(() => []),
     getLatestArticles({ limit: 10 }).catch(() => []),
     loadAdsForPosition('top'),
+    loadAdsForPosition('mid'),
     loadAdsForPosition('bottom'),
     loadAdsForPosition('mid-right'),
     loadAdsForPosition('mid-left'),
@@ -186,9 +187,16 @@ export default async function HomePage({ searchParams }) {
                   </section>
 
                   {sectionIndex === 0 ? (
-                    <section className="youtubeVideoStrip" style={{ gridColumn: '1 / -1' }}>
-                      <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
-                    </section>
+                    <>
+                      {adsMid.length > 0 ? (
+                        <section style={{ marginTop: 8, marginBottom: 18, gridColumn: '1 / -1' }}>
+                          <AdCarousel ads={adsMid} variant="wide" />
+                        </section>
+                      ) : null}
+                      <section className="youtubeVideoStrip" style={{ gridColumn: '1 / -1' }}>
+                        <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+                      </section>
+                    </>
                   ) : null}
                 </Fragment>
               );
