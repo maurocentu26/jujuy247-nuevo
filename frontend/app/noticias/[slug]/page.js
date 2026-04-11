@@ -6,6 +6,42 @@ import CurrentArticleTitle from '../../components/CurrentArticleTitle';
 
 export const dynamic = 'force-dynamic';
 
+function getYoutubeEmbedUrl(rawUrl) {
+  if (typeof rawUrl !== 'string') return '';
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return '';
+
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return '';
+  }
+
+  const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
+  let videoId = '';
+
+  if (host === 'youtu.be') {
+    videoId = parsed.pathname.split('/').filter(Boolean)[0] || '';
+  }
+
+  if (!videoId && (host === 'youtube.com' || host === 'm.youtube.com')) {
+    if (parsed.pathname === '/watch') {
+      videoId = parsed.searchParams.get('v') || '';
+    } else if (parsed.pathname.startsWith('/shorts/')) {
+      videoId = parsed.pathname.split('/')[2] || '';
+    } else if (parsed.pathname.startsWith('/embed/')) {
+      videoId = parsed.pathname.split('/')[2] || '';
+    }
+  }
+
+  if (!videoId || !/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+    return '';
+  }
+
+  return `https://www.youtube.com/embed/${videoId}`;
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await Promise.resolve(params);
   const article = await getArticleBySlug(slug);
@@ -73,6 +109,7 @@ export default async function ArticlePage({ params }) {
   const site = getSiteUrl();
   const imageFileId = getDirectusFileId(article.seo_image) || getDirectusFileId(article.cover_image);
   const imageUrl = imageFileId ? directusAssetUrl(imageFileId) : '';
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(article.youtube_url);
   const sourceName = typeof article.source_name === 'string' ? article.source_name.trim() : '';
   const sourceUrl = typeof article.source_url === 'string' ? article.source_url.trim() : '';
 
@@ -120,6 +157,30 @@ export default async function ArticlePage({ params }) {
           </span>
         ) : null}
       </div>
+
+      {youtubeEmbedUrl ? (
+        <div
+          style={{
+            marginTop: 14,
+            borderRadius: 12,
+            overflow: 'hidden',
+            position: 'relative',
+            width: '100%',
+            aspectRatio: '16 / 9',
+            background: '#000',
+          }}
+        >
+          <iframe
+            src={youtubeEmbedUrl}
+            title={`Video: ${article.title}`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+          />
+        </div>
+      ) : null}
 
       {imageUrl ? (
         <img

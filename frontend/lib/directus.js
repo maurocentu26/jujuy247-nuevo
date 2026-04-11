@@ -328,6 +328,7 @@ export async function getArticleBySlug(slug) {
     'tags.name',
   ];
 
+  const fieldsWithSourceAndVideo = [...baseFields, 'source_name', 'source_url', 'youtube_url'].join(',');
   const fieldsWithSource = [...baseFields, 'source_name', 'source_url'].join(',');
   const fieldsWithoutSource = baseFields.join(',');
 
@@ -336,20 +337,29 @@ export async function getArticleBySlug(slug) {
     status: { _eq: 'published' },
   }));
 
+  const urlWithSourceAndVideo = directusUrl(
+    `/items/articles?fields=${encodeURIComponent(fieldsWithSourceAndVideo)}&limit=1&filter=${filter}`
+  );
   const urlWithSource = directusUrl(`/items/articles?fields=${encodeURIComponent(fieldsWithSource)}&limit=1&filter=${filter}`);
 
   try {
-    const json = await fetchJson(urlWithSource);
+    const json = await fetchJson(urlWithSourceAndVideo);
     const items = json.data ?? [];
     return items[0] ?? null;
   } catch {
-    // Keep compatibility if source fields are not yet present in Directus schema.
-    const urlWithoutSource = directusUrl(
-      `/items/articles?fields=${encodeURIComponent(fieldsWithoutSource)}&limit=1&filter=${filter}`
-    );
-    const json = await fetchJson(urlWithoutSource);
-    const items = json.data ?? [];
-    return items[0] ?? null;
+    // Keep compatibility if optional fields are not yet present in Directus schema.
+    try {
+      const json = await fetchJson(urlWithSource);
+      const items = json.data ?? [];
+      return items[0] ?? null;
+    } catch {
+      const urlWithoutSource = directusUrl(
+        `/items/articles?fields=${encodeURIComponent(fieldsWithoutSource)}&limit=1&filter=${filter}`
+      );
+      const json = await fetchJson(urlWithoutSource);
+      const items = json.data ?? [];
+      return items[0] ?? null;
+    }
   }
 }
 
