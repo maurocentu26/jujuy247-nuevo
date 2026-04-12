@@ -12,6 +12,7 @@ export const metadata = {
     description: 'Estamos en el aire de Jujuy.',
     siteName: 'Jujuy247',
     type: 'website',
+    url: "https://www.jujuy247.com.ar",
     images: [
       {
         url: '/seo-imgs/share-img.jpeg',
