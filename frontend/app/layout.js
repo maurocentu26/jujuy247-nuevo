@@ -9,7 +9,7 @@ export const metadata = {
   description: 'Portal de noticias',
   openGraph: {
     title: 'Jujuy247',
-    description: 'MANTENETE INFORMADO CON JUJUY24/7, TU PORTAL DE NOTICIAS EN JUJUY. ÚLTIMAS NOTICIAS, ANÁLISIS Y MÁS.',
+    description: 'Estamos en el aire de Jujuy.',
     siteName: 'Jujuy247',
     type: 'website',
     images: [
@@ -24,7 +24,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Jujuy247',
-    description: 'MANTENETE INFORMADO CON JUJUY24/7, TU PORTAL DE NOTICIAS EN JUJUY. ÚLTIMAS NOTICIAS, ANÁLISIS Y MÁS.',
+    description: 'Estamos en el aire de Jujuy.',
     images: ['/seo-imgs/share-img.jpeg'],
   },
 };
