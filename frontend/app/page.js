@@ -9,28 +9,13 @@ import {
   getLatestArticles,
   getAds,
 } from '../lib/directus';
+import { formatRelativePublishedAt } from '../lib/datetime';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
 import AdCarousel from './components/AdCarousel';
 import { Fragment } from 'react';
 
 export const dynamic = 'force-dynamic';
-
-function formatRelativeTime(dateString) {
-  if (!dateString) return 'Ahora';
-
-  const ms = Date.now() - new Date(dateString).getTime();
-  if (!Number.isFinite(ms) || ms < 0) return 'Ahora';
-
-  const mins = Math.floor(ms / 60000);
-  if (mins < 60) return `Hace ${Math.max(mins, 1)} min`;
-
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `Hace ${hours} h`;
-
-  const days = Math.floor(hours / 24);
-  return `Hace ${days} d`;
-}
 
 export default async function HomePage({ searchParams }) {
   const youtubeChannelUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_URL || '#';
@@ -152,7 +137,7 @@ export default async function HomePage({ searchParams }) {
                             <div className="newsHeroBadge">{isFeaturedFrontPage ? 'Ultima hora' : 'Destacado'}</div>
                             <h3>{featured.title}</h3>
                             {featured.excerpt ? <p>{featured.excerpt}</p> : null}
-                            <div className="newsHeroMeta">{formatRelativeTime(featured.published_at)} · Leer mas</div>
+                            <div className="newsHeroMeta">{formatRelativePublishedAt(featured.published_at)} · Leer mas</div>
                           </Link>
                         ) : (
                           <div className="newsHeroLink">No hay noticias en esta categoría.</div>
@@ -234,7 +219,7 @@ export default async function HomePage({ searchParams }) {
                     <div className="newsSideBody">
                       <div className="newsSideCategory">{a.category?.name || 'General'}</div>
                       <div className="newsSideHeadline">{a.title}</div>
-                      <div className="newsSideTime">{formatRelativeTime(a.published_at)}</div>
+                      <div className="newsSideTime">{formatRelativePublishedAt(a.published_at)}</div>
                     </div>
                   </Link>
                 );

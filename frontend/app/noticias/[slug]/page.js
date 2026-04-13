@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { directusAssetUrl, getArticleBySlug, getCanonicalUrlForArticle, getDirectusFileId, getSiteUrl } from '../../../lib/directus';
+import { formatPublishedAt } from '../../../lib/datetime';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CurrentArticleTitle from '../../components/CurrentArticleTitle';
@@ -142,7 +143,7 @@ export default async function ArticlePage({ params }) {
       <h1 style={{ margin: '12px 0 0' }}>{article.title}</h1>
       <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
         {article.category?.name ? <span>{article.category.name}</span> : <span>Sin categoría</span>}
-        {article.published_at ? <span> · {new Date(article.published_at).toLocaleString('es-AR')}</span> : null}
+        {article.published_at ? <span> · {formatPublishedAt(article.published_at)}</span> : null}
         {sourceName ? (
           <span>
             {' '}
