@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import React from 'react';
 import { directusAssetUrl, getArticleBySlug, getCanonicalUrlForArticle, getDirectusFileId, getSiteUrl } from '../../../lib/directus';
 import { formatPublishedAt } from '../../../lib/datetime';
 import ReactMarkdown from 'react-markdown';
@@ -6,6 +7,32 @@ import remarkGfm from 'remark-gfm';
 import CurrentArticleTitle from '../../components/CurrentArticleTitle';
 
 export const dynamic = 'force-dynamic';
+
+function renderYoutubeEmbed(embedUrl, title) {
+  return (
+    <div
+      style={{
+        marginTop: 14,
+        borderRadius: 12,
+        overflow: 'hidden',
+        position: 'relative',
+        width: '100%',
+        aspectRatio: '16 / 9',
+        background: '#000',
+      }}
+    >
+      <iframe
+        src={embedUrl}
+        title={title}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+      />
+    </div>
+  );
+}
 
 function getYoutubeEmbedUrl(rawUrl) {
   if (typeof rawUrl !== 'string') return '';
@@ -160,27 +187,7 @@ export default async function ArticlePage({ params }) {
       </div>
 
       {youtubeEmbedUrl ? (
-        <div
-          style={{
-            marginTop: 14,
-            borderRadius: 12,
-            overflow: 'hidden',
-            position: 'relative',
-            width: '100%',
-            aspectRatio: '16 / 9',
-            background: '#000',
-          }}
-        >
-          <iframe
-            src={youtubeEmbedUrl}
-            title={`Video: ${article.title}`}
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-          />
-        </div>
+        renderYoutubeEmbed(youtubeEmbedUrl, `Video: ${article.title}`)
       ) : null}
 
       {imageUrl ? (
@@ -236,9 +243,26 @@ export default async function ArticlePage({ params }) {
                 );
               },
               p: ({ children, ...props }) => (
-                <p {...props} style={{ margin: '12px 0' }}>
-                  {children}
-                </p>
+                (() => {
+                  const normalizedChildren = React.Children.toArray(children).filter(
+                    (child) => !(typeof child === 'string' && child.trim() === '')
+                  );
+
+                  if (normalizedChildren.length === 1 && React.isValidElement(normalizedChildren[0])) {
+                    const onlyChild = normalizedChildren[0];
+                    const href = typeof onlyChild.props?.href === 'string' ? onlyChild.props.href : '';
+                    const embedUrl = getYoutubeEmbedUrl(href);
+                    if (embedUrl) {
+                      return renderYoutubeEmbed(embedUrl, 'Video de YouTube en el contenido');
+                    }
+                  }
+
+                  return (
+                    <p {...props} style={{ margin: '12px 0' }}>
+                      {children}
+                    </p>
+                  );
+                })()
               ),
               h2: ({ children, ...props }) => (
                 <h2 {...props} style={{ margin: '18px 0 10px' }}>
