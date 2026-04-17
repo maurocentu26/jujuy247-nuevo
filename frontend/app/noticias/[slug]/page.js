@@ -1,6 +1,14 @@
 import Link from 'next/link';
 import React from 'react';
-import { directusAssetUrl, getArticleBySlug, getCanonicalUrlForArticle, getDirectusFileId, getSiteUrl } from '../../../lib/directus';
+import {
+  directusAssetUrl,
+  getArticleBySlug,
+  getCanonicalUrlForArticle,
+  getDirectusFileId,
+  getLatestArticles,
+  getOtherArticlesInCategory,
+  getSiteUrl,
+} from '../../../lib/directus';
 import { formatPublishedAt } from '../../../lib/datetime';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -70,6 +78,40 @@ function getYoutubeEmbedUrl(rawUrl) {
   return `https://www.youtube.com/embed/${videoId}`;
 }
 
+function shuffleArticles(items) {
+  const result = [...items];
+
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+  }
+
+  return result;
+}
+
+function getRandomCrossCategoryArticles(articles, currentCategoryId, count = 2) {
+  const byCategory = new Map();
+
+  for (const article of Array.isArray(articles) ? articles : []) {
+    const categoryId = article?.category?.id;
+    if (!categoryId || categoryId === currentCategoryId) continue;
+
+    if (!byCategory.has(categoryId)) {
+      byCategory.set(categoryId, []);
+    }
+
+    byCategory.get(categoryId).push(article);
+  }
+
+  return shuffleArticles(Array.from(byCategory.values()))
+    .slice(0, count)
+    .map((group) => {
+      const shuffledGroup = shuffleArticles(group);
+      return shuffledGroup[0] || null;
+    })
+    .filter(Boolean);
+}
+
 export async function generateMetadata({ params }) {
   const { slug } = await Promise.resolve(params);
   const article = await getArticleBySlug(slug);
@@ -124,9 +166,6 @@ export default async function ArticlePage({ params }) {
   if (!article) {
     return (
       <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
-        <p style={{ marginTop: 0 }}>
-          <Link href="/">← Volver</Link>
-        </p>
         <h1>No encontrada</h1>
         <p>La noticia no existe o todavía no está publicada.</p>
       </main>
@@ -140,6 +179,13 @@ export default async function ArticlePage({ params }) {
   const youtubeEmbedUrl = getYoutubeEmbedUrl(article.youtube_url);
   const sourceName = typeof article.source_name === 'string' ? article.source_name.trim() : '';
   const sourceUrl = typeof article.source_url === 'string' ? article.source_url.trim() : '';
+
+  const [sameCategoryArticles, crossCategoryPool] = await Promise.all([
+    article.category?.id ? getOtherArticlesInCategory({ categoryId: article.category.id, excludeId: article.id, limit: 3 }).catch(() => []) : [],
+    getLatestArticles({ limit: 40 }).catch(() => []),
+  ]);
+
+  const crossCategoryArticles = getRandomCrossCategoryArticles(crossCategoryPool, article.category?.id, 2);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -164,9 +210,6 @@ export default async function ArticlePage({ params }) {
     <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <CurrentArticleTitle title={article.title} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <p style={{ marginTop: 0 }}>
-        <Link href="/">← Volver</Link>
-      </p>
       <h1 style={{ margin: '12px 0 0' }}>{article.title}</h1>
       <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
         {article.category?.name ? <span>{article.category.name}</span> : <span>Sin categoría</span>}
@@ -176,7 +219,7 @@ export default async function ArticlePage({ params }) {
             {' '}
             · Fuente:{' '}
             {sourceUrl ? (
-              <a href={sourceUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>
+              <a className="sourceLink" href={sourceUrl} target="_blank" rel="noreferrer">
                 {sourceName}
               </a>
             ) : (
@@ -221,15 +264,16 @@ export default async function ArticlePage({ params }) {
               img: ({ ...props }) => {
                 const credit = typeof props.title === 'string' ? props.title.trim() : '';
                 return (
-                  <figure style={{ margin: '14px 0' }}>
+                  <span style={{ display: 'block', margin: '14px 0' }}>
                     <img
                       {...props}
                       alt={props.alt || ''}
                       style={{ maxWidth: '100%', height: 'auto', borderRadius: 12, display: 'block' }}
                     />
                     {credit ? (
-                      <figcaption
+                      <span
                         style={{
+                          display: 'block',
                           marginTop: 6,
                           fontSize: 12,
                           lineHeight: 1.4,
@@ -237,9 +281,9 @@ export default async function ArticlePage({ params }) {
                         }}
                       >
                         {credit}
-                      </figcaption>
+                      </span>
                     ) : null}
-                  </figure>
+                  </span>
                 );
               },
               p: ({ children, ...props }) => (
@@ -254,6 +298,11 @@ export default async function ArticlePage({ params }) {
                     const embedUrl = getYoutubeEmbedUrl(href);
                     if (embedUrl) {
                       return renderYoutubeEmbed(embedUrl, 'Video de YouTube en el contenido');
+                    }
+
+                    // Avoid invalid HTML when markdown contains only an image inside a paragraph.
+                    if (onlyChild.type === 'img') {
+                      return onlyChild;
                     }
                   }
 
@@ -301,6 +350,76 @@ export default async function ArticlePage({ params }) {
             </span>
           ))}
         </div>
+      ) : null}
+
+      {sameCategoryArticles.length ? (
+        <section className="articleRelatedSection">
+          <p className="articleRelatedEyebrow articleRelatedEyebrowRight">Más de {article.category?.name || 'esta categoría'}</p>
+          <div className="articleRelatedList">
+            {sameCategoryArticles.map((relatedArticle) => {
+              const relatedImageUrl = relatedArticle.cover_image ? directusAssetUrl(getDirectusFileId(relatedArticle.cover_image)) : '';
+
+              return (
+                <Link
+                  key={relatedArticle.id}
+                  href={`/noticias/${relatedArticle.slug}`}
+                  className="articleRelatedRow"
+                >
+                  <div
+                    className="articleRelatedThumb"
+                    style={{ backgroundImage: relatedImageUrl ? `url(${relatedImageUrl})` : 'none' }}
+                  />
+                  <div className="articleRelatedMeta">
+                    <div className="articleRelatedCategory">
+                      {relatedArticle.category?.name || 'Categoría'}
+                    </div>
+                    <div className="articleRelatedHeadline">
+                      {relatedArticle.title}
+                    </div>
+                    <div className="articleRelatedTime">
+                      {relatedArticle.published_at ? formatPublishedAt(relatedArticle.published_at) : 'Reciente'}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {crossCategoryArticles.length ? (
+        <section className="articleRelatedSection">
+          <p className="articleRelatedEyebrow articleRelatedEyebrowLeft">También podría interesarte:</p>
+          <div className="articleRelatedCrossGrid">
+            {crossCategoryArticles.map((relatedArticle) => {
+              const relatedImageUrl = relatedArticle.cover_image ? directusAssetUrl(getDirectusFileId(relatedArticle.cover_image)) : '';
+
+              return (
+                <Link
+                  key={relatedArticle.id}
+                  href={`/noticias/${relatedArticle.slug}`}
+                  className="articleRelatedCrossCard"
+                >
+                  <div
+                    className="articleRelatedCrossImage"
+                    style={{ backgroundImage: relatedImageUrl ? `url(${relatedImageUrl})` : 'none' }}
+                  />
+                  <div className="articleRelatedCrossBody">
+                    <div className="articleRelatedCategory">
+                      {relatedArticle.category?.name || 'Categoría'}
+                    </div>
+                    <div className="articleRelatedCrossHeadline">
+                      {relatedArticle.title}
+                    </div>
+                    <div className="articleRelatedTime">
+                      {relatedArticle.published_at ? formatPublishedAt(relatedArticle.published_at) : 'Reciente'}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
       ) : null}
     </main>
   );

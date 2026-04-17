@@ -103,7 +103,7 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
         borderRadius: 14,
         overflow: 'hidden',
         background: 'linear-gradient(180deg, #f8fafc, #eef2f7)',
-        border: '1px solid #e2e8f0',
+        border: '1px solid var(--color-border)',
         boxShadow: '0 10px 28px rgba(15, 23, 42, 0.08)',
         aspectRatio: String(aspectRatio),
         width: '100%',
@@ -169,7 +169,7 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
                 width: 6,
                 height: 6,
                 borderRadius: '50%',
-                background: i === photoIndex ? '#fff' : 'rgba(255,255,255,0.6)',
+                background: i === photoIndex ? 'var(--color-primary)' : 'rgba(255,255,255,0.6)',
                 transition: 'background 0.2s',
               }}
             />
@@ -185,7 +185,7 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
             right: 8,
             fontSize: 10,
             fontWeight: 700,
-            background: 'rgba(0,0,0,0.7)',
+            background: 'rgba(26,26,46,0.7)',
             color: '#fff',
             padding: '4px 8px',
             borderRadius: 4,

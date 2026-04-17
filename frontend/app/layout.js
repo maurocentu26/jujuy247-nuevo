@@ -1,12 +1,38 @@
+import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+});
+
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: 'Jujuy247',
   description: 'Portal de noticias',
+  keywords: [
+    'Jujuy247',
+    'Noticias de Jujuy',
+    'Actualidad Jujuy',
+    'Radio Jujuy',
+    'Portal de noticias',
+    'Jujuy24/7',
+    'NOA Noticias',
+    'Berta Geronimo',
+    'Periodismo Jujuy',
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: 'Jujuy247',
     description: 'Estamos en el aire de Jujuy.',
@@ -32,11 +58,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
-      <body
-        suppressHydrationWarning
-        style={{ margin: 0, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }}
-      >
+    <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <body suppressHydrationWarning style={{ margin: 0 }}>
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
           <div style={{ flex: '1 0 auto' }}>{children}</div>

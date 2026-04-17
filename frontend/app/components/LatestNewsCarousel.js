@@ -65,7 +65,7 @@ export default function LatestNewsCarousel({ items }) {
           borderRadius: 16,
           overflow: 'hidden',
           border: '1px solid #e5e5e5',
-          background: '#0b0b0b',
+          background: '#1a1a2e',
           color: '#fff',
         }}
       >
@@ -167,7 +167,7 @@ export default function LatestNewsCarousel({ items }) {
             gap: 6,
             justifyContent: 'center',
             padding: '10px 12px',
-            background: '#0b0b0b',
+            background: '#1a1a2e',
           }}
         >
           {slides.map((a, i) => (

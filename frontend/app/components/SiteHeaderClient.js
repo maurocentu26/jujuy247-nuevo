@@ -5,11 +5,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Clock from './Clock';
-import { FaFacebookF, FaInstagram, FaYoutube } from 'react-icons/fa';
-import { FaXTwitter } from 'react-icons/fa6';
 import { WiCloud, WiDaySunny, WiFog, WiRain, WiSnow, WiThunderstorm } from 'react-icons/wi';
-
-const ARTICLE_TITLE_EVENT = 'jujuy247:article-title';
 
 function HamburgerIcon() {
   const line = {
@@ -29,31 +25,6 @@ function HamburgerIcon() {
   );
 }
 
-function SocialLink({ href, label, icon }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={label}
-      title={label}
-      style={{
-        color: 'inherit',
-        textDecoration: 'none',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 28,
-        height: 28,
-        opacity: 0.9,
-      }}
-    >
-      <span style={{ position: 'absolute', left: -9999, top: -9999 }}>{label}</span>
-      <span aria-hidden="true" style={{ display: 'inline-flex', fontSize: 25, lineHeight: 1 }}>{icon}</span>
-    </a>
-  );
-}
-
 function getWeatherIcon(weatherCode) {
   if (typeof weatherCode !== 'number') return null;
   if (weatherCode === 0) return <WiDaySunny />;
@@ -65,57 +36,46 @@ function getWeatherIcon(weatherCode) {
   return null;
 }
 
-function WeatherInfo({ weather, compact }) {
+function WeatherInfo({ weather, compact, panel = false }) {
   const weatherIcon = useMemo(() => getWeatherIcon(weather?.weatherCode), [weather?.weatherCode]);
-  const temperature = weather ? `${weather.temperatureC}°` : '—°';
+  const temperature = weather ? `${weather.temperatureC}°C` : '—°C';
   const summary = weather ? weather.summary : 'Clima';
 
-  if (compact) {
+  if (panel) {
     return (
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'flex-end', minWidth: 0 }}>
-        <span style={{ fontSize: 'clamp(12px, 2.8vw, 14px)', opacity: 0.85 }}>
-          <Clock label={null} />
-        </span>
-        <div style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}>
-          {weatherIcon ? <span aria-hidden="true" style={{ fontSize: 28, lineHeight: 0 }}>{weatherIcon}</span> : null}
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
-            <span style={{ fontWeight: 800, fontSize: 'clamp(12px, 2.8vw, 14px)' }}>{temperature}</span>
-            <span style={{ fontSize: 'clamp(11px, 2.6vw, 12px)', opacity: 0.8 }}>{summary}</span>
-          </div>
+      <div className={compact ? 'siteHeaderWeatherPanel siteHeaderWeatherPanelCompact' : 'siteHeaderWeatherPanel'}>
+        <div className="siteHeaderWeatherPanelTop">
+          <span className="siteHeaderWeatherPlace">S.S. DE JUJUY</span>
+          <span className="siteHeaderWeatherTime">
+            <Clock label={null} />
+          </span>
+        </div>
+
+        <div className="siteHeaderWeatherPanelBottom">
+          <span aria-hidden="true" className="siteHeaderWeatherIcon">
+            {weatherIcon || <WiDaySunny />}
+          </span>
+          <span className="siteHeaderWeatherTemp">{temperature}</span>
+          <span className="siteHeaderWeatherSummary">{summary}</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <div style={{ display: 'inline-flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 18, opacity: 0.85 }}>San Salvador de Jujuy</span>
-        <span style={{ fontSize: 18, opacity: 0.95 }}>
-          <Clock label={null} />
-        </span>
-      </div>
-      <div
-        style={{
-          marginTop: 10,
-          display: 'grid',
-          gridTemplateColumns: weatherIcon ? '22px auto' : 'auto',
-          gridTemplateRows: 'auto auto',
-          columnGap: 35,
-          rowGap: 0,
-          alignItems: 'center',
-          fontSize: 18,
-          opacity: 0.95,
-        }}
-      >
-        {weatherIcon ? (
-          <span aria-hidden="true" style={{ gridRow: '1 / span 2', fontSize: 50, lineHeight: 0 }}>
-            {weatherIcon}
-          </span>
-        ) : null}
-        <span style={{ fontWeight: 800, lineHeight: 1.1 }}>{temperature}</span>
-        <span style={{ opacity: 0.9, lineHeight: 1.1 }}>{summary}</span>
-      </div>
+    <div className={compact ? 'siteHeaderWeatherInline siteHeaderWeatherInlineCompact' : 'siteHeaderWeatherInline'}>
+      <span className="siteHeaderWeatherPlace">S.S. DE JUJUY</span>
+      <span className="siteHeaderWeatherSeparator" aria-hidden="true">
+        ·
+      </span>
+      <span className="siteHeaderWeatherTime">
+        <Clock label={null} />
+      </span>
+      <span aria-hidden="true" className="siteHeaderWeatherIcon">
+        {weatherIcon || <WiDaySunny />}
+      </span>
+      <span className="siteHeaderWeatherTemp">{temperature}</span>
+      <span className="siteHeaderWeatherSummary">{summary}</span>
     </div>
   );
 }
@@ -123,7 +83,6 @@ function WeatherInfo({ weather, compact }) {
 export default function SiteHeaderClient({ categories, weather }) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [currentArticleTitle, setCurrentArticleTitle] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [isCompact, setIsCompact] = useState(false);
@@ -135,18 +94,13 @@ export default function SiteHeaderClient({ categories, weather }) {
     const params = new URLSearchParams(window.location.search);
     setSelectedCategory(params.get('category') || '');
 
-    const initialTitle = document.documentElement?.dataset?.currentArticleTitle || '';
-    setCurrentArticleTitle(initialTitle);
-
-    const onArticleTitle = (event) => {
-      const nextTitle = event?.detail?.title;
-      setCurrentArticleTitle(typeof nextTitle === 'string' ? nextTitle : '');
-    };
-
-    window.addEventListener(ARTICLE_TITLE_EVENT, onArticleTitle);
-
     const update = () => {
       rafRef.current = null;
+      const width = window.innerWidth || 0;
+      if (width <= 980) {
+        setIsCompact(false);
+        return;
+      }
       const y = window.scrollY || 0;
       setIsCompact((prev) => {
         if (y <= 0) return false;
@@ -161,9 +115,10 @@ export default function SiteHeaderClient({ categories, weather }) {
     };
 
     onScroll();
+    window.addEventListener('resize', onScroll);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
-      window.removeEventListener(ARTICLE_TITLE_EVENT, onArticleTitle);
+      window.removeEventListener('resize', onScroll);
       window.removeEventListener('scroll', onScroll);
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -183,307 +138,137 @@ export default function SiteHeaderClient({ categories, weather }) {
   }, [isCompact, compactTriggerY]);
 
   const navCategories = Array.isArray(categories) ? categories : [];
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  const renderCategorySelect = (id, compactSelect = false) => (
+    <>
+      <label className="siteHeaderVisuallyHidden" htmlFor={id}>
+        Categorías
+      </label>
+      <select
+        id={id}
+        value={selectedCategory}
+        onChange={(e) => {
+          const slug = e.target.value;
+          setSelectedCategory(slug);
+          if (!slug) {
+            router.push('/');
+            return;
+          }
+          router.push(`/?category=${encodeURIComponent(slug)}`);
+        }}
+        className={compactSelect ? 'siteHeaderSelect siteHeaderSelectCompact' : 'siteHeaderSelect'}
+      >
+        <option value="">Todas las categorías</option>
+        {navCategories.map((c) => (
+          <option key={c.id} value={c.slug}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+    </>
+  );
 
   return (
-    <header style={{ position: 'sticky', top: 0, zIndex: 50, background: '#fff' }}>
-      {isCompact ? (
-        <div style={{ borderBottom: '1px solid #e5e5e5', background: '#fff' }}>
-          <div style={{ maxWidth: 980, margin: '0 auto', padding: '10px clamp(16px, 3vw, 24px)' }}>
-            <div className="headerDesktop">
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                <div style={{ minWidth: 0, flex: '0 0 auto' }}>
-                  <label style={{ position: 'absolute', left: -9999, top: -9999 }} htmlFor="category-select">
-                    Categorías
-                  </label>
-                  <select
-                    id="category-select"
-                    value={selectedCategory}
-                    onChange={(e) => {
-                      const slug = e.target.value;
-                      setSelectedCategory(slug);
-                      if (!slug) {
-                        router.push('/');
-                        return;
-                      }
-                      router.push(`/?category=${encodeURIComponent(slug)}`);
-                    }}
-                    style={{
-                      width: 'clamp(180px, 40vw, 260px)',
-                      maxWidth: '100%',
-                      height: 36,
-                      borderRadius: 10,
-                      border: '1px solid #e5e5e5',
-                      padding: '0 10px',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      background: '#fff',
-                    }}
-                  >
-                    <option value="">Todas las categorías</option>
-                    {navCategories.map((c) => (
-                      <option key={c.id} value={c.slug}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+    <header className="siteHeaderRoot">
+      <div ref={fullHeaderRef} className={isCompact ? 'siteHeaderShell siteHeaderShellCompact' : 'siteHeaderShell'}>
+        {isCompact ? (
+          <div className="siteHeaderTopRow siteHeaderTopRowCompact">
+            <button
+              type="button"
+              className="siteHeaderMenuButton"
+              aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              onClick={() => setIsMobileMenuOpen((v) => !v)}
+            >
+              <HamburgerIcon />
+            </button>
 
-                {currentArticleTitle ? (
-                  <div
-                    title={currentArticleTitle}
-                    style={{
-                      flex: '1 1 auto',
-                      minWidth: 0,
-                      textAlign: 'center',
-                      fontSize: 13,
-                      fontWeight: 800,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      padding: '0 6px',
-                    }}
-                  >
-                    {currentArticleTitle}
-                  </div>
-                ) : (
-                  <div style={{ flex: '1 1 auto' }} />
-                )}
+            <Link href="/" className="siteHeaderBrand" aria-label="Ir a inicio">
+              <Image src="/logo.png" alt="Jujuy247" width={360} height={120} priority className="siteHeaderLogo" />
+            </Link>
 
-                <WeatherInfo weather={weather} compact />
-              </div>
+            <div className="siteHeaderDesktopWeather siteHeaderDesktopWeatherCompact">
+              <WeatherInfo weather={weather} compact />
+            </div>
+          </div>
+        ) : (
+          <div className="siteHeaderTopRow">
+            <Link href="/" className="siteHeaderBrand" aria-label="Ir a inicio">
+              <Image src="/logo.png" alt="Jujuy247" width={360} height={120} priority className="siteHeaderLogo" />
+            </Link>
+
+            <div className="siteHeaderCurrentArticle siteHeaderCurrentArticleEmpty" aria-hidden="true" />
+
+            <div className="siteHeaderDesktopWeather">
+              <WeatherInfo weather={weather} compact={isCompact} />
             </div>
 
-            <div className="headerMobile">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <button
-                  type="button"
-                  aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-                  onClick={() => setIsMobileMenuOpen((v) => !v)}
-                  style={{
-                    border: '1px solid #e5e5e5',
-                    background: '#fff',
-                    color: '#111',
-                    borderRadius: 10,
-                    height: 36,
-                    width: 44,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0,
-                  }}
-                >
-                  <HamburgerIcon />
-                </button>
+            <button
+              type="button"
+              className="siteHeaderMenuButton"
+              aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              onClick={() => setIsMobileMenuOpen((v) => !v)}
+            >
+              <HamburgerIcon />
+            </button>
+          </div>
+        )}
 
-                <Link
-                  href="/"
-                  style={{
-                    flex: '1 1 auto',
-                    textAlign: 'center',
-                    fontWeight: 900,
-                    letterSpacing: 0.4,
-                    color: '#111',
-                    textDecoration: 'none',
-                  }}
-                >
-                  JUJUY247
+        {!isCompact ? (
+          <div className="siteHeaderNavBar">
+            <nav className="siteHeaderNav" aria-label="Categorías">
+              {navCategories.map((c) => (
+                <Link key={c.id} href={`/?category=${encodeURIComponent(c.slug)}`} className="siteHeaderNavLink">
+                  {c.name}
                 </Link>
-
-                <div style={{ width: 44 }} />
-              </div>
-
-              {isMobileMenuOpen ? (
-                <div style={{ marginTop: 10, borderTop: '1px solid #e5e5e5', paddingTop: 10 }}>
-                  <div style={{ display: 'grid', gap: 10 }}>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 800, opacity: 0.8 }} htmlFor="mobile-category-select">
-                        Categorías
-                      </label>
-                      <select
-                        id="mobile-category-select"
-                        value={selectedCategory}
-                        onChange={(e) => {
-                          const slug = e.target.value;
-                          setSelectedCategory(slug);
-                          setIsMobileMenuOpen(false);
-                          if (!slug) {
-                            router.push('/');
-                            return;
-                          }
-                          router.push(`/?category=${encodeURIComponent(slug)}`);
-                        }}
-                        style={{
-                          marginTop: 6,
-                          width: '100%',
-                          height: 40,
-                          borderRadius: 10,
-                          border: '1px solid #e5e5e5',
-                          padding: '0 10px',
-                          fontSize: 14,
-                          fontWeight: 700,
-                          background: '#fff',
-                        }}
-                      >
-                        <option value="">Todas las categorías</option>
-                        {navCategories.map((c) => (
-                          <option key={c.id} value={c.slug}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <WeatherInfo weather={weather} compact />
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </div>
+              ))}
+            </nav>
           </div>
-        </div>
-      ) : (
-        <>
-          <div ref={fullHeaderRef} style={{ borderBottom: '1px solid #e5e5e5', background: '#0b0b0b', color: '#fff' }}>
-            <div style={{ maxWidth: 980, margin: '0 auto', padding: '14px clamp(16px, 3vw, 24px)' }}>
-              <div className="headerDesktop">
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <WeatherInfo weather={weather} />
+        ) : null}
 
-                  <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
-                    <Image
-                      src="/logo.png"
-                      alt="Jujuy247"
-                      width={180}
-                      height={180}
-                      priority
-                      style={{ height: 'clamp(90px, 18vw, 180px)', width: 'auto' }}
-                    />
-                  </Link>
-
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }} aria-label="Redes">
-                    <SocialLink href="https://facebook.com" label="Facebook" icon={<FaFacebookF />} />
-                    <SocialLink href="https://twitter.com" label="X" icon={<FaXTwitter />} />
-                    <SocialLink href="https://instagram.com" label="Instagram" icon={<FaInstagram />} />
-                    <SocialLink href="https://youtube.com" label="YouTube" icon={<FaYoutube />} />
-                  </div>
-                </div>
+        {isMobileMenuOpen ? (
+          <div className="siteHeaderMobileMenuOverlay" role="presentation" onClick={closeMobileMenu}>
+            <aside
+              className="siteHeaderMobileMenu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menú de categorías"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="siteHeaderMobileMenuBrandWrap">
+                <Link href="/" className="siteHeaderMobileMenuBrand" aria-label="Ir a inicio" onClick={closeMobileMenu}>
+                  <Image src="/logo.png" alt="Jujuy247" width={280} height={94} priority className="siteHeaderMobileMenuLogo" />
+                </Link>
               </div>
 
-              <div className="headerMobile">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <button
-                    type="button"
-                    aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-                    onClick={() => setIsMobileMenuOpen((v) => !v)}
-                    style={{
-                      border: '1px solid rgba(255,255,255,0.25)',
-                      background: 'transparent',
-                      color: '#fff',
-                      borderRadius: 10,
-                      height: 36,
-                      width: 44,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 0,
-                    }}
-                  >
-                    <HamburgerIcon />
-                  </button>
-
-                  <Link
-                    href="/"
-                    style={{
-                      flex: '1 1 auto',
-                      textAlign: 'center',
-                      fontWeight: 900,
-                      letterSpacing: 0.4,
-                      color: '#fff',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    JUJUY247
-                  </Link>
-
-                  <div style={{ width: 44 }} />
-                </div>
-
-                {isMobileMenuOpen ? (
-                  <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.18)', paddingTop: 12 }}>
-                    <div style={{ display: 'grid', gap: 10 }}>
-                      <div style={{ color: '#fff' }}>
-                        <label style={{ fontSize: 12, fontWeight: 800, opacity: 0.85 }} htmlFor="mobile-category-select-full">
-                          Categorías
-                        </label>
-                        <select
-                          id="mobile-category-select-full"
-                          value={selectedCategory}
-                          onChange={(e) => {
-                            const slug = e.target.value;
-                            setSelectedCategory(slug);
-                            setIsMobileMenuOpen(false);
-                            if (!slug) {
-                              router.push('/');
-                              return;
-                            }
-                            router.push(`/?category=${encodeURIComponent(slug)}`);
-                          }}
-                          style={{
-                            marginTop: 6,
-                            width: '100%',
-                            height: 40,
-                            borderRadius: 10,
-                            border: '1px solid rgba(255,255,255,0.25)',
-                            padding: '0 10px',
-                            fontSize: 14,
-                            fontWeight: 700,
-                            background: '#fff',
-                            color: '#111',
-                          }}
-                        >
-                          <option value="">Todas las categorías</option>
-                          {navCategories.map((c) => (
-                            <option key={c.id} value={c.slug}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <WeatherInfo weather={weather} compact />
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
+              <div className="siteHeaderMobileMenuHeader">
+                <span className="siteHeaderMobileMenuTitle">Categorías</span>
+                <button type="button" className="siteHeaderMobileMenuClose" onClick={closeMobileMenu} aria-label="Cerrar menú">
+                  ×
+                </button>
               </div>
-            </div>
-          </div>
 
-          <div className="headerDesktop" style={{ borderBottom: '1px solid #e5e5e5', background: '#fff' }}>
-            <div style={{ maxWidth: 980, margin: '0 auto', padding: '10px clamp(16px, 3vw, 24px)' }}>
-              <nav style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }} aria-label="Categorías">
+              <div className="siteHeaderMobileMenuWeather">
+                <WeatherInfo weather={weather} compact panel />
+              </div>
+
+              <div className="siteHeaderMobileMenuSection">{renderCategorySelect('mobile-category-select')}</div>
+              <nav className="siteHeaderMobileNav" aria-label="Categorías móviles">
                 {navCategories.map((c) => (
                   <Link
                     key={c.id}
                     href={`/?category=${encodeURIComponent(c.slug)}`}
-                    style={{
-                      color: 'inherit',
-                      textDecoration: 'none',
-                      fontSize: 13,
-                      fontWeight: 800,
-                      letterSpacing: 0.2,
-                    }}
+                    className="siteHeaderMobileNavLink"
+                    onClick={closeMobileMenu}
                   >
                     {c.name}
                   </Link>
                 ))}
               </nav>
-            </div>
+            </aside>
           </div>
-        </>
-      )}
+        ) : null}
+      </div>
     </header>
   );
 }

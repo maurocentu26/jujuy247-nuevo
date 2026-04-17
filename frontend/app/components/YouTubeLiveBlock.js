@@ -9,7 +9,7 @@ function LiveBadge() {
         fontSize: 11,
         fontWeight: 950,
         letterSpacing: 0.4,
-        background: '#b42318',
+        background: 'var(--color-primary)',
         color: '#fff',
         padding: '5px 10px',
         borderRadius: 999,
@@ -41,7 +41,7 @@ export default function YouTubeLiveBlock({ liveVideo, videos, channelUrl }) {
       style={{
         borderRadius: 16,
         overflow: 'hidden',
-        background: '#0b0b0b',
+        background: '#1a1a2e',
         color: '#fff',
         border: '1px solid rgba(255,255,255,0.10)',
       }}
@@ -86,7 +86,7 @@ export default function YouTubeLiveBlock({ liveVideo, videos, channelUrl }) {
               style={{
                 borderRadius: 14,
                 overflow: 'hidden',
-                background: '#000',
+                background: '#1a1a2e',
                 border: '1px solid rgba(255,255,255,0.10)',
               }}
             >

@@ -13,9 +13,40 @@ import { formatRelativePublishedAt } from '../lib/datetime';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
 import AdCarousel from './components/AdCarousel';
-import { Fragment } from 'react';
 
 export const dynamic = 'force-dynamic';
+const ONE_HOUR_MS = 60 * 60 * 1000;
+
+function getFeaturedBadgeLabel(article) {
+  if (!article?.front_page) return 'Destacado';
+
+  const publishedAt = article?.published_at ? new Date(article.published_at) : null;
+  if (!publishedAt || Number.isNaN(publishedAt.getTime())) return 'Ultima hora';
+
+  const ageMs = Date.now() - publishedAt.getTime();
+  return ageMs > ONE_HOUR_MS ? 'Más reciente' : 'Ultima hora';
+}
+
+export const metadata = {
+  title: 'Jujuy247 | Estamos en el aire de Jujuy',
+  description: 'Ultimas noticias de Jujuy, actualidad, deportes, política, cultura y más. Estamos en el aire de Jujuy las 24 horas.',
+  keywords: [
+    'Noticias de Jujuy',
+    'Jujuy247',
+    'Jujuy noticias',
+    'actualidad Jujuy',
+    'noticias del NOA',
+    'radio Jujuy',
+    'portal de noticias Jujuy',
+    'Berta Geronimo',
+    'periodismo Jujuy',
+    'Jujuy24/7',
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default async function HomePage({ searchParams }) {
   const youtubeChannelUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_URL || '#';
@@ -73,7 +104,7 @@ export default async function HomePage({ searchParams }) {
       const featured = frontPage || latest[0] || null;
       const list = featured ? latest.filter((a) => a.id !== featured.id).slice(0, 4) : latest.slice(0, 5);
 
-      return { category: c, featured, list, isFeaturedFrontPage: Boolean(frontPage) };
+      return { category: c, featured, list, featuredBadgeLabel: getFeaturedBadgeLabel(featured) };
     })
   );
 
@@ -90,6 +121,69 @@ export default async function HomePage({ searchParams }) {
     return String(a?.category?.name || '').localeCompare(String(b?.category?.name || ''), 'es');
   });
 
+  const [firstSection, ...restSections] = sectionsSorted;
+
+  const renderNewsSection = ({ category: c, featured, list, featuredBadgeLabel }) => {
+    const cards = Array.isArray(list) ? list.slice(0, 3) : [];
+    const heroImage = featured?.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
+
+    return (
+      <section className="newsBlock" key={c.id}>
+        <header className="newsBlockHeader">
+          <h2 className='categoryTitle'>{c.name}</h2>
+        </header>
+
+        <div className="newsTopLayout" style={{ gridTemplateColumns: '1fr' }}>
+          <article className="newsHeroCard">
+            {featured ? (
+              <Link
+                href={`/noticias/${featured.slug}`}
+                className="newsHeroLink"
+                style={{
+                  backgroundImage: heroImage
+                    ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.86) 70%), url(${heroImage})`
+                    : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
+                }}
+              >
+                <div className="newsHeroBadge">{featuredBadgeLabel}</div>
+                <h3>{featured.title}</h3>
+                {featured.excerpt ? <p>{featured.excerpt}</p> : null}
+                <div className="newsHeroMeta">{formatRelativePublishedAt(featured.published_at)} · Leer mas</div>
+              </Link>
+            ) : (
+              <div className="newsHeroLink">No hay noticias en esta categoría.</div>
+            )}
+          </article>
+        </div>
+
+        {cards.length ? (
+          <div className="newsCardsRow">
+            {cards.map((a) => {
+              const cardImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+
+              return (
+                <Link key={a.id} href={`/noticias/${a.slug}`} className="newsMiniCard">
+                  <div
+                    className="newsMiniCardImage"
+                    style={{
+                      backgroundImage: cardImage
+                        ? `url(${cardImage})`
+                        : 'linear-gradient(180deg, rgba(12,25,44,0.22), rgba(12,25,44,0.68))',
+                    }}
+                  />
+                  <div className="newsMiniCardBody">
+                    <div className="newsMiniCardCategory">{c.name}</div>
+                    <div className="newsMiniCardTitle">{a.title}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : null}
+      </section>
+    );
+  };
+
   return (
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
@@ -103,89 +197,25 @@ export default async function HomePage({ searchParams }) {
           )}
 
           {sectionsSorted.length === 0 ? (
-            <div style={{ padding: 16, border: '1px solid #e5e5e5', borderRadius: 12 }}>
+            <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
               {categorySlug
                 ? 'Categoría no encontrada (o sin permisos). Probá seleccionar otra categoría.'
                 : 'No hay categorías o noticias todavía. Cargá contenido desde el admin.'}
             </div>
           ) : (
-            sectionsSorted.map(({ category: c, featured, list, isFeaturedFrontPage }, sectionIndex) => {
-              const cards = Array.isArray(list) ? list.slice(0, 3) : [];
+            <>
+              {firstSection ? renderNewsSection(firstSection) : null}
 
-              const heroImage = featured?.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
+              {adsMid.length > 0 ? (
+                <section style={{ marginTop: 8, marginBottom: 18 }}>
+                  <AdCarousel ads={adsMid} variant="wide" />
+                </section>
+              ) : null}
 
-              return (
-                <Fragment key={c.id}>
-                  <section className="newsBlock">
-                    <header className="newsBlockHeader">
-                      <h2>{c.name}</h2>
-                      <span>{(featured ? 1 : 0) + list.length} noticias</span>
-                    </header>
-
-                    <div className="newsTopLayout" style={{ gridTemplateColumns: '1fr' }}>
-                      <article className="newsHeroCard">
-                        {featured ? (
-                          <Link
-                            href={`/noticias/${featured.slug}`}
-                            className="newsHeroLink"
-                            style={{
-                              backgroundImage: heroImage
-                                ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.86) 70%), url(${heroImage})`
-                                : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
-                            }}
-                          >
-                            <div className="newsHeroBadge">{isFeaturedFrontPage ? 'Ultima hora' : 'Destacado'}</div>
-                            <h3>{featured.title}</h3>
-                            {featured.excerpt ? <p>{featured.excerpt}</p> : null}
-                            <div className="newsHeroMeta">{formatRelativePublishedAt(featured.published_at)} · Leer mas</div>
-                          </Link>
-                        ) : (
-                          <div className="newsHeroLink">No hay noticias en esta categoría.</div>
-                        )}
-                      </article>
-                    </div>
-
-                    {cards.length ? (
-                      <div className="newsCardsRow">
-                        {cards.map((a) => {
-                          const cardImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
-
-                          return (
-                            <Link key={a.id} href={`/noticias/${a.slug}`} className="newsMiniCard">
-                              <div
-                                className="newsMiniCardImage"
-                                style={{
-                                  backgroundImage: cardImage
-                                    ? `url(${cardImage})`
-                                    : 'linear-gradient(180deg, rgba(12,25,44,0.22), rgba(12,25,44,0.68))',
-                                }}
-                              />
-                              <div className="newsMiniCardBody">
-                                <div className="newsMiniCardCategory">{c.name}</div>
-                                <div className="newsMiniCardTitle">{a.title}</div>
-                              </div>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </section>
-
-                  {sectionIndex === 0 ? (
-                    <>
-                      {adsMid.length > 0 ? (
-                        <section style={{ marginTop: 8, marginBottom: 18, gridColumn: '1 / -1' }}>
-                          <AdCarousel ads={adsMid} variant="wide" />
-                        </section>
-                      ) : null}
-                      <section className="youtubeVideoStrip" style={{ gridColumn: '1 / -1' }}>
-                        <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
-                      </section>
-                    </>
-                  ) : null}
-                </Fragment>
-              );
-            })
+              <section className="youtubeVideoStrip">
+                <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+              </section>
+            </>
           )}
         </section>
 
@@ -199,7 +229,7 @@ export default async function HomePage({ searchParams }) {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <span style={{ width: 4, height: 24, borderRadius: 999, background: '#ef2a2a' }} />
+              <span style={{ width: 4, height: 24, borderRadius: 999, background: 'var(--color-primary)' }} />
               <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>Lo último</h2>
             </div>
 
@@ -234,6 +264,8 @@ export default async function HomePage({ searchParams }) {
           )}
         </aside>
       </div>
+
+      {restSections.length > 0 ? <section className="newsBlocksWrap newsBlocksFullWidth">{restSections.map(renderNewsSection)}</section> : null}
 
       {adsMidLeft.length > 0 && (
         <div style={{ marginTop: 28, marginBottom: 28 }}>

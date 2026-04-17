@@ -29,12 +29,12 @@ function PlayGlyph() {
         width: 52,
         height: 52,
         borderRadius: 999,
-        background: '#ef2a2a',
+        background: 'var(--color-primary)',
         color: '#fff',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 14px 30px rgba(239,42,42,0.35)',
+        boxShadow: '0 14px 30px rgba(37,99,235,0.35)',
         fontSize: 24,
         lineHeight: 1,
       }}
@@ -129,7 +129,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 4, height: 24, borderRadius: 999, background: '#ef2a2a' }} />
+          <span style={{ width: 4, height: 24, borderRadius: 999, background: 'var(--color-primary)' }} />
           <h2 style={{ margin: 0, fontSize: 34, fontWeight: 900, letterSpacing: 0.2, color: '#f8fafc' }}>Videos</h2>
         </div>
 
@@ -138,7 +138,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
           target="_blank"
           rel="noreferrer"
           style={{
-            color: '#dc2626',
+            color: 'var(--color-primary)',
             textDecoration: 'none',
             fontSize: 23,
             fontWeight: 700,
@@ -212,7 +212,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
                           position: 'absolute',
                           left: 10,
                           top: 10,
-                          background: '#b42318',
+                          background: 'var(--color-primary-dark)',
                           color: '#fff',
                           fontSize: 10,
                           fontWeight: 900,
@@ -233,7 +233,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
                         fontSize: 17,
                         fontWeight: 800,
                         lineHeight: 1.22,
-                        color: isLive ? '#dc2626' : '#0f172a',
+                        color: isLive ? 'var(--color-primary)' : '#1a1a2e',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
@@ -245,7 +245,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
 
                     <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                       <span style={{ fontSize: 12, color: '#64748b' }}>{published || 'YouTube'}</span>
-                      <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 700 }}>Ver video</span>
+                      <span style={{ fontSize: 12, color: 'var(--color-primary)', fontWeight: 700 }}>Ver video</span>
                     </div>
                   </div>
                 </a>
@@ -267,7 +267,7 @@ export default function YouTubeCarouselCard({ videos, channelUrl, liveVideo }) {
               height: 8,
               borderRadius: 999,
               border: 0,
-              background: i === index ? '#ef2a2a' : '#cbd5e1',
+              background: i === index ? 'var(--color-primary)' : '#cbd5e1',
               cursor: 'pointer',
             }}
           />
