@@ -3,7 +3,7 @@
 :root {
   --font-body: var(--font-inter);
   --font-display: var(--font-space-grotesk);
-  --color-primary: #2563eb;
+  --color-primary: #c23434;
   --color-primary-dark: #1a1a2e;
   --color-text: #1a1a2e;
   --color-surface: #f8f9fa;
@@ -207,7 +207,13 @@ h6,
   position: sticky;
   top: 0;
   z-index: 50;
-  background: linear-gradient(180deg, #f8f9fa 0%, #eef2f7 100%);
+  --color-primary: #d1d5db;
+  --color-primary-dark: #f5f5f5;
+  --color-text: #f5f5f5;
+  --color-surface: rgba(18, 18, 18, 0.9);
+  --color-muted: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(255, 255, 255, 0.14);
+  background: linear-gradient(0deg, #000 0%, #171717 55%, #3b3b3b 100%);
 }
 
 .siteHeaderShell {
@@ -297,7 +303,7 @@ h6,
 }
 
 .siteHeaderWeatherSeparator {
-  color: #9ca3af;
+  color: var(--color-muted);
   font-weight: 700;
 }
 
@@ -343,7 +349,7 @@ h6,
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  box-shadow: 0 10px 24px rgba(26, 26, 46, 0.06);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
   color: var(--color-text);
   font-size: 12px;
   font-weight: 900;
@@ -399,7 +405,7 @@ h6,
   border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 6px 10px;
-  box-shadow: 0 10px 24px rgba(26, 26, 46, 0.05);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
 }
 
 .siteHeaderNav {
@@ -432,9 +438,15 @@ h6,
 .siteHeaderMobileMenu {
   width: min(88vw, 320px);
   height: 100%;
-  background: rgba(248, 249, 250, 0.98);
-  border-left: 1px solid var(--color-border);
-  box-shadow: -18px 0 36px rgba(26, 26, 46, 0.14);
+  --color-primary: #d1d5db;
+  --color-primary-dark: #f5f5f5;
+  --color-text: #f5f5f5;
+  --color-surface: rgba(18, 18, 18, 0.9);
+  --color-muted: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(255, 255, 255, 0.14);
+  background: linear-gradient(0deg, #000 0%, #131313 55%, #373737 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -18px 0 36px rgba(0, 0, 0, 0.38);
   padding: 14px 14px 16px;
   overflow-y: auto;
   transform: translateX(100%);
@@ -523,7 +535,7 @@ h6,
 .siteHeaderWeatherPanel .siteHeaderWeatherSummary {
   font-size: 10px;
   letter-spacing: 0.2px;
-  color: #52525b;
+  color: var(--color-muted);
 }
 
 .siteHeaderWeatherPanel .siteHeaderWeatherTemp {

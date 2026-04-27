@@ -210,7 +210,7 @@ export default async function ArticlePage({ params }) {
     <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <CurrentArticleTitle title={article.title} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <h1 style={{ margin: '12px 0 0' }}>{article.title}</h1>
+      <h1 style={{ margin: '12px 0 0', color: '#c23434'}}> {article.title}</h1>
       <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
         {article.category?.name ? <span>{article.category.name}</span> : <span>Sin categoría</span>}
         {article.published_at ? <span> · {formatPublishedAt(article.published_at)}</span> : null}
@@ -354,7 +354,7 @@ export default async function ArticlePage({ params }) {
 
       {sameCategoryArticles.length ? (
         <section className="articleRelatedSection">
-          <p className="articleRelatedEyebrow articleRelatedEyebrowRight">Más de {article.category?.name || 'esta categoría'}</p>
+          <p className="articleRelatedEyebrow articleRelatedEyebrowRight">Más sobre: {article.category?.name || 'esta categoría'}</p>
           <div className="articleRelatedList">
             {sameCategoryArticles.map((relatedArticle) => {
               const relatedImageUrl = relatedArticle.cover_image ? directusAssetUrl(getDirectusFileId(relatedArticle.cover_image)) : '';

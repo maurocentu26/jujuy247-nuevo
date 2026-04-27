@@ -34,7 +34,7 @@ function PlayGlyph() {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 14px 30px rgba(37,99,235,0.35)',
+        boxShadow: '0 14px 30px rgba(194,52,52,0.35)',
         fontSize: 24,
         lineHeight: 1,
       }}
