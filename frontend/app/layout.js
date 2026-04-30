@@ -1,4 +1,5 @@
 import { Inter, Space_Grotesk } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 
 import SiteHeader from './components/SiteHeader';
@@ -62,9 +63,19 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || '';
+
   return (
     <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body suppressHydrationWarning style={{ margin: 0 }}>
+        {adsenseClient ? (
+          <Script
+            async
+            strategy="afterInteractive"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+            crossOrigin="anonymous"
+          />
+        ) : null}
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
           <div style={{ flex: '1 0 auto' }}>{children}</div>

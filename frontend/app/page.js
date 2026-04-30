@@ -15,6 +15,7 @@ import { formatRelativePublishedAt } from '../lib/datetime';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
 import AdCarousel from './components/AdCarousel';
+import GoogleAdSlot from './components/GoogleAdSlot';
 
 export const dynamic = 'force-dynamic';
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -94,6 +95,14 @@ export default async function HomePage({ searchParams }) {
   const youtubeChannelUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_URL || '#';
   const youtubeApiKey = process.env.YOUTUBE_API_KEY || '';
   const youtubeChannelHandle = process.env.YOUTUBE_CHANNEL_HANDLE || '';
+  const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || '';
+  const adsenseSlots = {
+    high: process.env.NEXT_PUBLIC_ADSENSE_SLOT_HIGH || '',
+    highMid: process.env.NEXT_PUBLIC_ADSENSE_SLOT_HIGH_MID || '',
+    mid: process.env.NEXT_PUBLIC_ADSENSE_SLOT_MID || '',
+    lowMid: process.env.NEXT_PUBLIC_ADSENSE_SLOT_LOW_MID || '',
+    low: process.env.NEXT_PUBLIC_ADSENSE_SLOT_LOW || '',
+  };
 
   let youtubeChannelId = process.env.YOUTUBE_CHANNEL_ID || '';
   if (!youtubeChannelId && youtubeApiKey && youtubeChannelHandle) {
@@ -115,12 +124,14 @@ export default async function HomePage({ searchParams }) {
   const adsLowMid = adsByPriority('low-mid');
   const adsBottom = adsByPriority('low');
 
-  const renderAdSlot = (ads, { marginTop = 0, marginBottom = 0, maxWidth = '100%', variant = 'wide' } = {}) => {
+  const renderAdSlot = (ads, { marginTop = 0, marginBottom = 0, maxWidth = '100%', variant = 'wide', adsenseSlot = '' } = {}) => {
     if (!Array.isArray(ads) || ads.length === 0) return null;
+    const hasAdsense = Boolean(adsenseClient && adsenseSlot);
 
     return (
       <div style={{ marginTop, marginBottom, display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth }}>
+        <div style={{ width: '100%', maxWidth, display: 'grid', gap: hasAdsense ? 12 : 0 }}>
+          {hasAdsense ? <GoogleAdSlot client={adsenseClient} slot={adsenseSlot} variant={variant} /> : null}
           <AdCarousel ads={ads} variant={variant} />
         </div>
       </div>
@@ -192,8 +203,9 @@ export default async function HomePage({ searchParams }) {
   const middleSections = restSections.slice(0, 5);
   const rightSections = restSections.slice(5, 8);
   const secondarySections = sectionsSorted.slice(1);
-  const earlySecondarySections = secondarySections.slice(0, 3);
-  const lateSecondarySections = secondarySections.slice(3);
+  const earlySecondarySections = secondarySections.slice(0, 2);
+  const middleSecondarySections = secondarySections.slice(2, 5);
+  const lateSecondarySections = secondarySections.slice(5);
   const promoSectionId = secondarySections.length ? secondarySections[Math.floor(Math.random() * secondarySections.length)]?.category?.id || null : null;
 
   const renderSectionBlock = ({ category, featured, list }) => {
@@ -280,7 +292,7 @@ export default async function HomePage({ searchParams }) {
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
-      {renderAdSlot(adsTop, { marginBottom: 28, maxWidth: 1200 })}
+      {renderAdSlot(adsTop, { marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.high })}
 
       {sectionsSorted.length === 0 ? (
         <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
@@ -396,13 +408,15 @@ export default async function HomePage({ searchParams }) {
         </div>
       )}
 
-      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860 })}
+      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860, adsenseSlot: adsenseSlots.highMid })}
 
-      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 18, maxWidth: 1200 })}
+      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 18, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
 
       {earlySecondarySections.length > 0 ? <section className="newsSectionsWrap">{earlySecondarySections.map(renderSectionBlock)}</section> : null}
 
-      {renderAdSlot(adsLowMid, { marginTop: 24, marginBottom: 28, maxWidth: 980 })}
+      {middleSecondarySections.length > 0 ? <section className="newsSectionsWrap">{middleSecondarySections.map(renderSectionBlock)}</section> : null}
+
+      {renderAdSlot(adsLowMid, { marginTop: 24, marginBottom: 28, maxWidth: 980, adsenseSlot: adsenseSlots.lowMid })}
 
       {lateSecondarySections.length > 0 ? <section className="newsSectionsWrap">{lateSecondarySections.map(renderSectionBlock)}</section> : null}
 
@@ -416,7 +430,7 @@ export default async function HomePage({ searchParams }) {
         <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
       </section>
 
-      {renderAdSlot(adsBottom, { marginTop: 28, maxWidth: 1200 })}
+      {renderAdSlot(adsBottom, { marginTop: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.low })}
     </main>
   );
 }

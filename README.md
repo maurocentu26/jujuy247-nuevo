@@ -91,6 +91,15 @@ Carpeta: `frontend/`
    - `NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055`
 3. (Opcional) setear stream:
    - `NEXT_PUBLIC_RADIO_STREAM_URL=<url_del_stream>`
+4. (Opcional) setear Google AdSense:
+   - `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-xxxxxxxxxxxxxxxx`
+   - `NEXT_PUBLIC_ADSENSE_SLOT_HIGH=<slot_id>`
+   - `NEXT_PUBLIC_ADSENSE_SLOT_HIGH_MID=<slot_id>`
+   - `NEXT_PUBLIC_ADSENSE_SLOT_MID=<slot_id>`
+   - `NEXT_PUBLIC_ADSENSE_SLOT_LOW_MID=<slot_id>`
+   - `NEXT_PUBLIC_ADSENSE_SLOT_LOW=<slot_id>`
+
+Si configurás AdSense, el front usa esos slots en lugar de los banners manuales de Directus. Si no, mantiene el fallback actual.
 
 ### Instalar y correr
 
