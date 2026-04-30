@@ -16,19 +16,16 @@ Carpeta: `backend-directus/`
 ### Levantar el admin
 
 1. Copiá variables de entorno:
-
    - Copiar `backend-directus/.env.example` a `backend-directus/.env`
    - Cambiar `DB_PASSWORD`, `DIRECTUS_KEY`, `DIRECTUS_SECRET`, `ADMIN_PASSWORD`
 
 2. Levantar:
-
    - Desde la carpeta `backend-directus/` ejecutar:
      - `docker compose up -d`
 
-    Nota: para **local** se levantan solo `db` + `directus`. El reverse proxy **Caddy** queda opcional bajo un profile.
-
-    - Si querés levantar también Caddy (80/443), ejecutar:
-       - `docker compose --profile proxy up -d`
+   Nota: para **local** se levantan solo `db` + `directus`. El reverse proxy **Caddy** queda opcional bajo un profile.
+   - Si querés levantar también Caddy (80/443), ejecutar:
+     - `docker compose --profile proxy up -d`
 
 3. Abrir:
 
@@ -38,15 +35,18 @@ Carpeta: `backend-directus/`
 
 Crear 3 colecciones:
 
-1) `categories`
+1. `categories`
+
 - `name` (string, required)
 - `slug` (string, unique, required)
 
-2) `tags`
+2. `tags`
+
 - `name` (string, required)
 - `slug` (string, unique, required)
 
-3) `articles`
+3. `articles`
+
 - `title` (string, required)
 - `slug` (string, unique, required)
 - `excerpt` (text)
@@ -70,6 +70,7 @@ Estos campos ayudan a que cada noticia tenga buen título/description para Googl
 - `seo_no_follow` (boolean) → si querés que NO siga links
 
 Opcional (avanzado):
+
 - `seo_keywords` (text) → si no lo usás, se pueden derivar de `tags`
 
 ### Permisos (para que el frontend lea)
@@ -118,9 +119,11 @@ Abrir: http://localhost:3000
 - En la web, ponés un reproductor HTML5 (`<audio>`), como ya está en el front.
 
 Formato recomendado:
+
 - MP3 o AAC
 
 Notas:
+
 - A veces el browser exige HTTPS si tu sitio corre en HTTPS.
 - Ver CORS del servidor de streaming si el audio no carga.
 
@@ -131,8 +134,9 @@ Notas:
 
 ### Opción C (transmisión “desde la página”)
 
-Si querés que alguien transmita *desde el navegador* (tipo “estudio web”), ya es WebRTC y se complica.
+Si querés que alguien transmita _desde el navegador_ (tipo “estudio web”), ya es WebRTC y se complica.
 Recomendación práctica:
+
 - Usar un servicio: **Mux**, **Cloudflare Stream**, **AWS IVS**, etc.
 - O transmitir con OBS a un servidor RTMP/HLS.
 
