@@ -49,7 +49,6 @@ export default function FooterClient({ sections }) {
 
       <div className="siteFooterBottom">
         <div>© 2026 Jujuy 24/7. Todos los derechos reservados.</div>
-        <div>Hecho con tinta digital en San Salvador de Jujuy.</div>
       </div>
 
       {isContactOpen ? (

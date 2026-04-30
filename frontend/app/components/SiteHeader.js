@@ -1,4 +1,4 @@
-import { getCategories, getCurrentWeatherForJujuy } from '../../lib/directus';
+import { getCategories, getCurrentWeatherForJujuy, sortCategoriesByPosition } from '../../lib/directus';
 import SiteHeaderClient from './SiteHeaderClient';
 
 const FALLBACK_CATEGORIES = [
@@ -16,7 +16,7 @@ export default async function SiteHeader() {
     getCurrentWeatherForJujuy().catch(() => null),
   ]);
 
-  const navCategories = Array.isArray(categories) && categories.length ? categories : FALLBACK_CATEGORIES;
+  const navCategories = Array.isArray(categories) && categories.length ? sortCategoriesByPosition(categories) : FALLBACK_CATEGORIES;
 
   return <SiteHeaderClient categories={navCategories} weather={weather} />;
 }

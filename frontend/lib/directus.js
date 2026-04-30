@@ -23,6 +23,36 @@ export function getDirectusFileId(fileField) {
   return '';
 }
 
+export function sortCategoriesByPosition(categories) {
+  return [...(Array.isArray(categories) ? categories : [])].sort((a, b) => {
+    const aPos = Number(a?.position);
+    const bPos = Number(b?.position);
+    const aHasPos = Number.isFinite(aPos);
+    const bHasPos = Number.isFinite(bPos);
+
+    if (aHasPos && bHasPos && aPos !== bPos) return aPos - bPos;
+    if (aHasPos && !bHasPos) return -1;
+    if (!aHasPos && bHasPos) return 1;
+
+    return String(a?.name || '').localeCompare(String(b?.name || ''), 'es');
+  });
+}
+
+export function sortAdsByOrder(ads) {
+  return [...(Array.isArray(ads) ? ads : [])].sort((a, b) => {
+    const aOrder = Number(a?.sort);
+    const bOrder = Number(b?.sort);
+    const aHasOrder = Number.isFinite(aOrder);
+    const bHasOrder = Number.isFinite(bOrder);
+
+    if (aHasOrder && bHasOrder && aOrder !== bOrder) return aOrder - bOrder;
+    if (aHasOrder && !bHasOrder) return -1;
+    if (!aHasOrder && bHasOrder) return 1;
+
+    return String(a?.id || '').localeCompare(String(b?.id || ''));
+  });
+}
+
 export async function getCategories({ limit = 10 } = {}) {
   const fields = ['id', 'name', 'slug', 'position'].join(',');
   const url = directusUrl(`/items/categories?fields=${encodeURIComponent(fields)}&sort=position,name&limit=${limit}`);
@@ -372,6 +402,10 @@ export function getCanonicalUrlForArticle(article) {
 export async function getAds({ position } = {}) {
   const fields = [
     'id',
+    'title',
+    'priority',
+    'sort',
+    'url',
     'position',
     'photos',
     'photos.id',

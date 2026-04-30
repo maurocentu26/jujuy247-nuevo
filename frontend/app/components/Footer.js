@@ -1,4 +1,4 @@
-import { getCategories } from '../../lib/directus';
+import { getCategories, sortCategoriesByPosition } from '../../lib/directus';
 import FooterClient from './FooterClient';
 
 const FALLBACK_SECTIONS = [
@@ -10,7 +10,7 @@ const FALLBACK_SECTIONS = [
 
 export default async function Footer() {
   const categories = await getCategories({ limit: 50 }).catch(() => []);
-  const navSections = Array.isArray(categories) && categories.length ? categories : FALLBACK_SECTIONS;
+  const navSections = Array.isArray(categories) && categories.length ? sortCategoriesByPosition(categories) : FALLBACK_SECTIONS;
 
   return <FooterClient sections={navSections} />;
 }

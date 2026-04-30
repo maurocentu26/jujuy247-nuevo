@@ -25,9 +25,9 @@ function resolvePhotoFileId(photoItem) {
 export default function AdCarousel({ ads, variant = 'wide' }) {
   const [adIndex, setAdIndex] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
-  const [aspectRatio, setAspectRatio] = useState(variant === 'sidebar' ? 4 / 5 : 21 / 9);
   const adIntervalRef = useRef(null);
   const photoIntervalRef = useRef(null);
+  const aspectRatio = variant === 'sidebar' ? 4 / 5 : 16 / 5;
 
   const adsArray = useMemo(() => (Array.isArray(ads) ? ads.filter(Boolean) : []), [ads]);
   const currentAd = adsArray[adIndex] || null;
@@ -82,20 +82,6 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
 
   const currentPhotoUrl = photos[photoIndex];
   const adUrl = typeof currentAd.url === 'string' ? currentAd.url.trim() : '';
-  const isSidebar = variant === 'sidebar';
-
-  const onImageLoad = (event) => {
-    const img = event.currentTarget;
-    const w = Number(img?.naturalWidth || 0);
-    const h = Number(img?.naturalHeight || 0);
-    if (!w || !h) return;
-    const ratio = w / h;
-    if (!Number.isFinite(ratio)) return;
-    const minRatio = isSidebar ? 0.55 : 1.2;
-    const maxRatio = isSidebar ? 2.2 : 4.2;
-    const clamped = Math.min(maxRatio, Math.max(minRatio, ratio));
-    setAspectRatio(clamped);
-  };
 
   return (
     <div
@@ -107,6 +93,7 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
         boxShadow: '0 10px 28px rgba(15, 23, 42, 0.08)',
         aspectRatio: String(aspectRatio),
         width: '100%',
+        maxWidth: '100%',
         position: 'relative',
       }}
     >
@@ -126,7 +113,6 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
           <img
             src={currentPhotoUrl}
             alt="Publicidad"
-            onLoad={onImageLoad}
             style={{
               width: '100%',
               height: '100%',
@@ -140,7 +126,6 @@ export default function AdCarousel({ ads, variant = 'wide' }) {
         <img
           src={currentPhotoUrl}
           alt="Publicidad"
-          onLoad={onImageLoad}
           style={{
             width: '100%',
             height: '100%',

@@ -4,11 +4,12 @@ import {
   getDirectusFileId,
   getCategories,
   getCategoryBySlug,
-  getTopCategoriesWithRecentArticles,
   getFrontPageArticleInCategory,
   getOtherArticlesInCategory,
   getLatestArticles,
   getAds,
+  sortAdsByOrder,
+  sortCategoriesByPosition,
 } from '../lib/directus';
 import { formatRelativePublishedAt } from '../lib/datetime';
 import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
@@ -99,18 +100,32 @@ export default async function HomePage({ searchParams }) {
     youtubeChannelId = await getChannelIdForHandle({ apiKey: youtubeApiKey, handle: youtubeChannelHandle }).catch(() => '');
   }
 
-  const loadAdsForPosition = (position) => getAds({ position }).catch(() => []);
-
-  const [liveVideo, latestVideos, latestHeadlines, adsTop, adsMid, adsBottom, adsMidRight, adsMidLeft] = await Promise.all([
+  const [liveVideo, latestVideos, latestHeadlines, allAds] = await Promise.all([
     getLiveVideoForChannel({ apiKey: youtubeApiKey, channelId: youtubeChannelId }).catch(() => null),
     getLatestChannelVideos({ apiKey: youtubeApiKey, channelId: youtubeChannelId, limit: 10 }).catch(() => []),
     getLatestArticles({ limit: 10 }).catch(() => []),
-    loadAdsForPosition('top'),
-    loadAdsForPosition('mid'),
-    loadAdsForPosition('bottom'),
-    loadAdsForPosition('mid-right'),
-    loadAdsForPosition('mid-left'),
+    getAds().catch(() => []),
   ]);
+
+  const adsByPriority = (priority) => sortAdsByOrder(allAds.filter((ad) => String(ad?.priority || '').toLowerCase() === priority));
+
+  const adsTop = adsByPriority('high');
+  const adsHighMid = adsByPriority('high-mid');
+  const adsMid = adsByPriority('mid');
+  const adsLowMid = adsByPriority('low-mid');
+  const adsBottom = adsByPriority('low');
+
+  const renderAdSlot = (ads, { marginTop = 0, marginBottom = 0, maxWidth = '100%', variant = 'wide' } = {}) => {
+    if (!Array.isArray(ads) || ads.length === 0) return null;
+
+    return (
+      <div style={{ marginTop, marginBottom, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth }}>
+          <AdCarousel ads={ads} variant={variant} />
+        </div>
+      </div>
+    );
+  };
 
   const allCategories = await getCategories({ limit: 100 }).catch(() => []);
   const categoryDisplayMap = buildCategoryDisplayMap(allCategories);
@@ -134,7 +149,7 @@ export default async function HomePage({ searchParams }) {
     ? selectedCategory
       ? [selectedCategory]
       : []
-    : await getTopCategoriesWithRecentArticles({ limitCategories: 5, days: 7 }).catch(() => []);
+    : sortCategoriesByPosition(allCategories);
 
   const sections = await Promise.all(
     categories.map(async (c) => {
@@ -155,8 +170,8 @@ export default async function HomePage({ searchParams }) {
   const sectionsSorted = [...sections].sort((a, b) => {
     const aPos = Number(a?.category?.position);
     const bPos = Number(b?.category?.position);
-    const aHasPos = Number.isFinite(aPos) && aPos > 0;
-    const bHasPos = Number.isFinite(bPos) && bPos > 0;
+    const aHasPos = Number.isFinite(aPos);
+    const bHasPos = Number.isFinite(bPos);
 
     if (aHasPos && bHasPos && aPos !== bPos) return aPos - bPos;
     if (aHasPos && !bHasPos) return -1;
@@ -174,9 +189,11 @@ export default async function HomePage({ searchParams }) {
     : '';
   const firstSectionList = Array.isArray(firstSection?.list) ? firstSection.list.slice(0, 4) : [];
 
-  const middleSections = restSections.slice(0, 3);
-  const rightSections = restSections.slice(3, 6);
+  const middleSections = restSections.slice(0, 5);
+  const rightSections = restSections.slice(5, 8);
   const secondarySections = sectionsSorted.slice(1);
+  const earlySecondarySections = secondarySections.slice(0, 3);
+  const lateSecondarySections = secondarySections.slice(3);
   const promoSectionId = secondarySections.length ? secondarySections[Math.floor(Math.random() * secondarySections.length)]?.category?.id || null : null;
 
   const renderSectionBlock = ({ category, featured, list }) => {
@@ -263,11 +280,7 @@ export default async function HomePage({ searchParams }) {
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
-      {adsTop.length > 0 && (
-        <div style={{ marginBottom: 28 }}>
-          <AdCarousel ads={adsTop} variant="wide" />
-        </div>
-      )}
+      {renderAdSlot(adsTop, { marginBottom: 28, maxWidth: 1200 })}
 
       {sectionsSorted.length === 0 ? (
         <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
@@ -383,13 +396,15 @@ export default async function HomePage({ searchParams }) {
         </div>
       )}
 
-      {adsMid.length > 0 ? (
-        <section style={{ marginTop: 24, marginBottom: 18 }}>
-          <AdCarousel ads={adsMid} variant="wide" />
-        </section>
-      ) : null}
+      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860 })}
 
-      {secondarySections.length > 0 ? <section className="newsSectionsWrap">{secondarySections.map(renderSectionBlock)}</section> : null}
+      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 18, maxWidth: 1200 })}
+
+      {earlySecondarySections.length > 0 ? <section className="newsSectionsWrap">{earlySecondarySections.map(renderSectionBlock)}</section> : null}
+
+      {renderAdSlot(adsLowMid, { marginTop: 24, marginBottom: 28, maxWidth: 980 })}
+
+      {lateSecondarySections.length > 0 ? <section className="newsSectionsWrap">{lateSecondarySections.map(renderSectionBlock)}</section> : null}
 
       <section className="newsPromoBox" aria-label="Publicidad">
         <div className="newsPromoEyebrow">Publicidad</div>
@@ -401,17 +416,7 @@ export default async function HomePage({ searchParams }) {
         <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
       </section>
 
-      {adsMidLeft.length > 0 && (
-        <div style={{ marginTop: 28, marginBottom: 28 }}>
-          <AdCarousel ads={adsMidLeft} variant="wide" />
-        </div>
-      )}
-
-      {adsBottom.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <AdCarousel ads={adsBottom} variant="wide" />
-        </div>
-      )}
+      {renderAdSlot(adsBottom, { marginTop: 28, maxWidth: 1200 })}
     </main>
   );
 }

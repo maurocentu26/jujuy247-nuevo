@@ -1,4 +1,4 @@
-import { getCategories, getLatestArticles, getSiteUrl } from '../lib/directus';
+import { getCategories, getLatestArticles, getSiteUrl, sortCategoriesByPosition } from '../lib/directus';
 
 export default async function sitemap() {
   const siteUrl = getSiteUrl();
@@ -6,6 +6,7 @@ export default async function sitemap() {
     getCategories({ limit: 50 }).catch(() => []),
     getLatestArticles({ limit: 100 }).catch(() => []),
   ]);
+  const sortedCategories = sortCategoriesByPosition(categories);
 
   const entries = [
     {
@@ -16,7 +17,7 @@ export default async function sitemap() {
     },
   ];
 
-  for (const category of categories) {
+  for (const category of sortedCategories) {
     if (!category?.slug) continue;
     entries.push({
       url: `${siteUrl}/?category=${encodeURIComponent(category.slug)}`,
