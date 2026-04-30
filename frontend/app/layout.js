@@ -1,5 +1,4 @@
 import { Inter, Space_Grotesk } from 'next/font/google';
-import Script from 'next/script';
 import './globals.css';
 
 import SiteHeader from './components/SiteHeader';
@@ -67,15 +66,16 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="es" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body suppressHydrationWarning style={{ margin: 0 }}>
+      <head>
         {adsenseClient ? (
-          <Script
+          <script
             async
-            strategy="afterInteractive"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
             crossOrigin="anonymous"
           />
         ) : null}
+      </head>
+      <body suppressHydrationWarning style={{ margin: 0 }}>
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
           <div style={{ flex: '1 0 auto' }}>{children}</div>
