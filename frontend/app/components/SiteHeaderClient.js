@@ -184,7 +184,7 @@ export default function SiteHeaderClient({ categories, weather }) {
             </button>
 
             <Link href="/" className="siteHeaderBrand" aria-label="Ir a inicio">
-              <Image src="/logo2.png" alt="Jujuy247" width={360} height={120} priority className="siteHeaderLogo" />
+              <Image src="/logo3.png" alt="Jujuy247" width={360} height={120} priority className="siteHeaderLogo" />
             </Link>
 
             <div className="siteHeaderDesktopWeather siteHeaderDesktopWeatherCompact">
@@ -194,7 +194,7 @@ export default function SiteHeaderClient({ categories, weather }) {
         ) : (
           <div className="siteHeaderTopRow">
             <Link href="/" className="siteHeaderBrand" aria-label="Ir a inicio">
-              <Image src="/logo2.png" alt="Jujuy247" width={360} height={120} priority className="siteHeaderLogo" />
+              <Image src="/logo3.png" alt="Jujuy247" width={360} height={120} priority className="siteHeaderLogo" />
             </Link>
 
             <div className="siteHeaderCurrentArticle siteHeaderCurrentArticleEmpty" aria-hidden="true" />
@@ -237,7 +237,7 @@ export default function SiteHeaderClient({ categories, weather }) {
             >
               <div className="siteHeaderMobileMenuBrandWrap">
                 <Link href="/" className="siteHeaderMobileMenuBrand" aria-label="Ir a inicio" onClick={closeMobileMenu}>
-                  <Image src="/logo2.png" alt="Jujuy247" width={280} height={94} priority className="siteHeaderMobileMenuLogo" />
+                  <Image src="/logo3.png" alt="Jujuy247" width={280} height={94} priority className="siteHeaderMobileMenuLogo" />
                 </Link>
               </div>
 

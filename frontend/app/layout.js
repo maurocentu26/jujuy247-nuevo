@@ -18,6 +18,11 @@ export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: 'Jujuy247',
   description: 'Portal de noticias',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/apple-icon.png',
+  },
   keywords: [
     'Jujuy247',
     'Noticias de Jujuy',

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   directusAssetUrl,
   getDirectusFileId,
+  getCategories,
   getCategoryBySlug,
   getTopCategoriesWithRecentArticles,
   getFrontPageArticleInCategory,
@@ -16,6 +17,46 @@ import AdCarousel from './components/AdCarousel';
 
 export const dynamic = 'force-dynamic';
 const ONE_HOUR_MS = 60 * 60 * 1000;
+const CATEGORY_COLOR = '#d61f29';
+
+function buildCategoryDisplayMap(categories) {
+  const map = new Map();
+
+  (Array.isArray(categories) ? categories : []).forEach((category, index) => {
+    const slug = String(category?.slug || '').toLowerCase();
+    const name = String(category?.name || '').trim();
+    if (!slug) return;
+
+    map.set(slug, {
+      label: name || slug,
+      color: CATEGORY_COLOR,
+    });
+  });
+
+  return map;
+}
+
+function getCategoryDisplay(category, categoryDisplayMap) {
+  const slug = String(category?.slug || '').toLowerCase();
+  const name = String(category?.name || '').trim();
+  const display = categoryDisplayMap?.get(slug);
+
+  if (display) return display;
+
+  return {
+    label: name || slug || 'General',
+    color: CATEGORY_COLOR,
+  };
+}
+
+function truncateTitle(value, maxLength) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  if (!Number.isFinite(maxLength) || maxLength <= 0 || text.length <= maxLength) return text;
+
+  const sliceLength = Math.max(0, maxLength - 3);
+  return `${text.slice(0, sliceLength).trimEnd()}...`;
+}
 
 function getFeaturedBadgeLabel(article) {
   if (!article?.front_page) return 'Destacado';
@@ -71,6 +112,9 @@ export default async function HomePage({ searchParams }) {
     loadAdsForPosition('mid-left'),
   ]);
 
+  const allCategories = await getCategories({ limit: 100 }).catch(() => []);
+  const categoryDisplayMap = buildCategoryDisplayMap(allCategories);
+
   const sp = await Promise.resolve(searchParams);
   const categoryParam = sp?.category;
 
@@ -122,63 +166,94 @@ export default async function HomePage({ searchParams }) {
   });
 
   const [firstSection, ...restSections] = sectionsSorted;
+  const firstSectionCategory = firstSection?.category || null;
+  const firstSectionDisplay = getCategoryDisplay(firstSectionCategory, categoryDisplayMap);
+  const firstSectionFeatured = firstSection?.featured || null;
+  const firstSectionFeaturedImage = firstSectionFeatured?.cover_image
+    ? directusAssetUrl(getDirectusFileId(firstSectionFeatured.cover_image))
+    : '';
+  const firstSectionList = Array.isArray(firstSection?.list) ? firstSection.list.slice(0, 4) : [];
 
-  const renderNewsSection = ({ category: c, featured, list, featuredBadgeLabel }) => {
-    const cards = Array.isArray(list) ? list.slice(0, 3) : [];
-    const heroImage = featured?.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
+  const middleSections = restSections.slice(0, 3);
+  const rightSections = restSections.slice(3, 6);
+  const secondarySections = sectionsSorted.slice(1);
+  const promoSectionId = secondarySections.length ? secondarySections[Math.floor(Math.random() * secondarySections.length)]?.category?.id || null : null;
+
+  const renderSectionBlock = ({ category, featured, list }) => {
+    if (!category || !featured) return null;
+
+    const display = getCategoryDisplay(category, categoryDisplayMap);
+    const featuredImage = featured.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
+    const listItems = Array.isArray(list) ? list.slice(0, 3) : [];
 
     return (
-      <section className="newsBlock" key={c.id}>
-        <header className="newsBlockHeader">
-          <h2 className='categoryTitle'>{c.name}</h2>
+      <section className="newsSectionBlock" key={category.id}>
+        <header className="newsSectionHeader">
+          <div>
+            <div className="newsSectionEyebrow" style={{ color: display.color }}>
+              SECCIÓN
+            </div>
+            <h2 className="newsSectionTitle">{display.label}</h2>
+          </div>
+          <Link href={`/?category=${encodeURIComponent(category.slug)}`} className="newsSectionViewAll">
+            Ver todo ↗
+          </Link>
         </header>
 
-        <div className="newsTopLayout" style={{ gridTemplateColumns: '1fr' }}>
-          <article className="newsHeroCard">
-            {featured ? (
-              <Link
-                href={`/noticias/${featured.slug}`}
-                className="newsHeroLink"
-                style={{
-                  backgroundImage: heroImage
-                    ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.86) 70%), url(${heroImage})`
-                    : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
-                }}
-              >
-                <div className="newsHeroBadge">{featuredBadgeLabel}</div>
-                <h3>{featured.title}</h3>
-                {featured.excerpt ? <p>{featured.excerpt}</p> : null}
-                <div className="newsHeroMeta">{formatRelativePublishedAt(featured.published_at)} · Leer mas</div>
-              </Link>
-            ) : (
-              <div className="newsHeroLink">No hay noticias en esta categoría.</div>
-            )}
+        <div className="newsSectionBody">
+          <article className="newsSectionLead">
+            <Link
+              href={`/noticias/${featured.slug}`}
+              className="newsSectionLeadImage"
+              style={{
+                backgroundImage: featuredImage
+                  ? `url(${featuredImage})`
+                  : 'linear-gradient(180deg, rgba(13,24,41,0.25), rgba(13,24,41,0.82))',
+              }}
+            />
+            <div className="newsSectionLeadText">
+              <div className="frontPageCategory" style={{ color: display.color }}>
+                {display.label.toUpperCase()}
+              </div>
+              <h3 className="newsSectionLeadTitle">
+                <Link href={`/noticias/${featured.slug}`}>{featured.title}</Link>
+              </h3>
+              {featured.excerpt ? <p className="newsSectionLeadExcerpt">{featured.excerpt}</p> : null}
+              <div className="frontPageLeadTime">{formatRelativePublishedAt(featured.published_at)}</div>
+            </div>
           </article>
-        </div>
 
-        {cards.length ? (
-          <div className="newsCardsRow">
-            {cards.map((a) => {
-              const cardImage = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
+          <div className="newsSectionList">
+            {listItems.map((article) => {
+              const articleDisplay = getCategoryDisplay(article.category || category);
+              const articleImage = article.cover_image ? directusAssetUrl(getDirectusFileId(article.cover_image)) : '';
 
               return (
-                <Link key={a.id} href={`/noticias/${a.slug}`} className="newsMiniCard">
-                  <div
-                    className="newsMiniCardImage"
-                    style={{
-                      backgroundImage: cardImage
-                        ? `url(${cardImage})`
-                        : 'linear-gradient(180deg, rgba(12,25,44,0.22), rgba(12,25,44,0.68))',
-                    }}
-                  />
-                  <div className="newsMiniCardBody">
-                    <div className="newsMiniCardCategory">{c.name}</div>
-                    <div className="newsMiniCardTitle">{a.title}</div>
+                <Link key={article.id} href={`/noticias/${article.slug}`} className="newsSectionListItem">
+                  <div className="newsSectionListText">
+                    <div className="frontPageCategory" style={{ color: articleDisplay.color }}>
+                      {articleDisplay.label.toUpperCase()}
+                    </div>
+                    <div className="newsSectionListTitle">{article.title}</div>
+                    <div className="frontPageLeadTime">{formatRelativePublishedAt(article.published_at)}</div>
                   </div>
+                  <div
+                    className="newsSectionListThumb"
+                    style={{ backgroundImage: articleImage ? `url(${articleImage})` : 'none' }}
+                    aria-hidden="true"
+                  />
                 </Link>
               );
             })}
           </div>
+        </div>
+
+        {category.id === promoSectionId ? (
+          <section className="newsPromoBox newsPromoBoxCompact" aria-label="Publicidad">
+            <div className="newsPromoEyebrow">Publicidad</div>
+            <h2>Tu publicidad se puede ver acá.</h2>
+            <p>Contactanos y mostrá tu marca en una sección destacada del portal.</p>
+          </section>
         ) : null}
       </section>
     );
@@ -188,84 +263,143 @@ export default async function HomePage({ searchParams }) {
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
-      <div className="homeMainGrid">
-        <section className="newsBlocksWrap">
-          {adsTop.length > 0 && (
-            <div style={{ marginBottom: 28 }}>
-              <AdCarousel ads={adsTop} variant="wide" />
-            </div>
-          )}
+      {adsTop.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <AdCarousel ads={adsTop} variant="wide" />
+        </div>
+      )}
 
-          {sectionsSorted.length === 0 ? (
-            <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
-              {categorySlug
-                ? 'Categoría no encontrada (o sin permisos). Probá seleccionar otra categoría.'
-                : 'No hay categorías o noticias todavía. Cargá contenido desde el admin.'}
-            </div>
-          ) : (
-            <>
-              {firstSection ? renderNewsSection(firstSection) : null}
+      {sectionsSorted.length === 0 ? (
+        <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
+          {categorySlug
+            ? 'Categoría no encontrada (o sin permisos). Probá seleccionar otra categoría.'
+            : 'No hay categorías o noticias todavía. Cargá contenido desde el admin.'}
+        </div>
+      ) : (
+        <div className="frontPageLayout">
+          <section className="frontPageLeadCol">
+            {firstSectionFeatured ? (
+              <article className="frontPageLeadCard">
+                <Link
+                  href={`/noticias/${firstSectionFeatured.slug}`}
+                  className="frontPageLeadImage"
+                  style={{
+                    backgroundImage: firstSectionFeaturedImage
+                      ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.84) 72%), url(${firstSectionFeaturedImage})`
+                      : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
+                  }}
+                />
+                <div className="frontPageLeadMeta">
+                  <div className="frontPageCategory" style={{ color: firstSectionDisplay.color }}>
+                    {firstSectionDisplay.label.toUpperCase()}
+                  </div>
+                  <h2 className="frontPageLeadTitle">
+                    <Link href={`/noticias/${firstSectionFeatured.slug}`}>{firstSectionFeatured.title}</Link>
+                  </h2>
+                  <div className="frontPageLeadTime">{formatRelativePublishedAt(firstSectionFeatured.published_at)}</div>
+                </div>
+              </article>
+            ) : null}
 
-              {adsMid.length > 0 ? (
-                <section style={{ marginTop: 8, marginBottom: 18 }}>
-                  <AdCarousel ads={adsMid} variant="wide" />
-                </section>
-              ) : null}
+            {firstSectionList.length ? (
+              <div className="frontPageLeadList">
+                {firstSectionList.map((article) => {
+                  const thumbUrl = article?.cover_image ? directusAssetUrl(getDirectusFileId(article.cover_image)) : '';
+                  const display = getCategoryDisplay(firstSectionCategory, categoryDisplayMap);
 
-              <section className="youtubeVideoStrip">
-                <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
-              </section>
-            </>
-          )}
-        </section>
+                  return (
+                    <Link key={article.id} href={`/noticias/${article.slug}`} className="frontPageLeadListItem">
+                      <div className="frontPageLeadListBody">
+                        <div className="frontPageCategory" style={{ color: display.color }}>
+                          {display.label.toUpperCase()}
+                        </div>
+                        <h3>{article.title}</h3>
+                        <div className="frontPageLeadTime">{formatRelativePublishedAt(article.published_at)}</div>
+                      </div>
+                      <div className="frontPageLeadThumb" style={{ backgroundImage: thumbUrl ? `url(${thumbUrl})` : 'none' }} />
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </section>
 
-        <aside className="latestSidebar" aria-label="Lo último">
-          <section
-            style={{
-              border: '1px solid #eceff3',
-              borderRadius: 14,
-              background: '#f7f8fa',
-              padding: 12,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <span style={{ width: 4, height: 24, borderRadius: 999, background: 'var(--color-primary)' }} />
-              <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900, lineHeight: 1 }}>Lo último</h2>
-            </div>
+          <section className="frontPageMiddleCol" aria-label="Notas destacadas">
+            {middleSections.map(({ category, featured, featuredBadgeLabel }) => {
+              if (!featured) return null;
+              const display = getCategoryDisplay(category, categoryDisplayMap);
+              const cardImage = featured.cover_image ? directusAssetUrl(getDirectusFileId(featured.cover_image)) : '';
+              const featuredTitle = truncateTitle(featured.title, 52);
 
-            <div className="latestNewsList" style={{ display: 'grid', gap: 10 }}>
-              {latestHeadlines.map((a) => {
-                const thumbUrl = a?.cover_image ? directusAssetUrl(getDirectusFileId(a.cover_image)) : '';
-                return (
-                  <Link key={a.id} href={`/noticias/${a.slug}`} className="newsSideItem latestNewsItem">
-                    <div
-                      className="newsSideThumb"
-                      style={{
-                        backgroundImage: thumbUrl
-                          ? `url(${thumbUrl})`
-                          : 'linear-gradient(180deg, rgba(10,20,36,0.18), rgba(10,20,36,0.65))',
-                      }}
-                    />
-                    <div className="newsSideBody">
-                      <div className="newsSideCategory">{a.category?.name || 'General'}</div>
-                      <div className="newsSideHeadline">{a.title}</div>
-                      <div className="newsSideTime">{formatRelativePublishedAt(a.published_at)}</div>
+              return (
+                <Link key={category.id} href={`/noticias/${featured.slug}`} className="frontPageStoryCard">
+                  <div className="frontPageStoryText">
+                    <div className="frontPageCategory" style={{ color: display.color }}>
+                      {display.label.toUpperCase()}
                     </div>
+                    <h3 title={featured.title}>{featuredTitle}</h3>
+                    <div className="frontPageLeadTime">{featuredBadgeLabel} · {formatRelativePublishedAt(featured.published_at)}</div>
+                  </div>
+                  <div className="frontPageStoryThumb" style={{ backgroundImage: cardImage ? `url(${cardImage})` : 'none' }} />
+                </Link>
+              );
+            })}
+          </section>
+
+          <aside className="frontPageRightCol" aria-label="Lo último">
+            <div className="frontPageLatestHeader">
+              <h2>Lo último</h2>
+            </div>
+
+            <div className="frontPageLatestList">
+              {latestHeadlines.slice(0, 5).map((article) => {
+                const display = getCategoryDisplay(article.category, categoryDisplayMap);
+                return (
+                  <Link key={article.id} href={`/noticias/${article.slug}`} className="frontPageLatestItem">
+                    <div className="frontPageCategory" style={{ color: display.color }}>
+                      {display.label.toUpperCase()}
+                    </div>
+                    <h3>{article.title}</h3>
+                    <div className="frontPageLeadTime">{formatRelativePublishedAt(article.published_at)}</div>
                   </Link>
                 );
               })}
             </div>
-          </section>
 
-          {adsMidRight.length > 0 && (
-            <section style={{ marginTop: 20 }}>
-              <AdCarousel ads={adsMidRight} variant="sidebar" />
-            </section>
-          )}
-        </aside>
-      </div>
+            {rightSections.map(({ category, featured, featuredBadgeLabel }) => {
+              if (!featured) return null;
+              const display = getCategoryDisplay(category, categoryDisplayMap);
+              return (
+                <Link key={category.id} href={`/noticias/${featured.slug}`} className="frontPageLatestItem frontPageLatestItemCompact">
+                  <div className="frontPageCategory" style={{ color: display.color }}>
+                    {display.label.toUpperCase()}
+                  </div>
+                  <h3>{featured.title}</h3>
+                  <div className="frontPageLeadTime">{featuredBadgeLabel} · {formatRelativePublishedAt(featured.published_at)}</div>
+                </Link>
+              );
+            })}
+          </aside>
+        </div>
+      )}
 
-      {restSections.length > 0 ? <section className="newsBlocksWrap newsBlocksFullWidth">{restSections.map(renderNewsSection)}</section> : null}
+      {adsMid.length > 0 ? (
+        <section style={{ marginTop: 24, marginBottom: 18 }}>
+          <AdCarousel ads={adsMid} variant="wide" />
+        </section>
+      ) : null}
+
+      {secondarySections.length > 0 ? <section className="newsSectionsWrap">{secondarySections.map(renderSectionBlock)}</section> : null}
+
+      <section className="newsPromoBox" aria-label="Publicidad">
+        <div className="newsPromoEyebrow">Publicidad</div>
+        <h2>Tu publicidad se puede ver acá.</h2>
+        <p>Contactanos para sumar tu marca al portal y llegar a toda la audiencia de Jujuy.</p>
+      </section>
+
+      <section className="youtubeVideoStrip">
+        <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+      </section>
 
       {adsMidLeft.length > 0 && (
         <div style={{ marginTop: 28, marginBottom: 28 }}>

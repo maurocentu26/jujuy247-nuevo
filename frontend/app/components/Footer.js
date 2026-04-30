@@ -1,34 +1,16 @@
-import Link from 'next/link';
+import { getCategories } from '../../lib/directus';
+import FooterClient from './FooterClient';
 
-export default function Footer() {
-  const socialLinks = [
-    { label: 'Instagram', href: '#' },
-    { label: 'Facebook', href: '#' },
-    { label: 'X', href: '#' },
-    { label: 'YouTube', href: '#' },
-  ];
+const FALLBACK_SECTIONS = [
+  { id: 'politica', name: 'Política', slug: 'politica' },
+  { id: 'economia', name: 'El País', slug: 'economia' },
+  { id: 'deportes', name: 'Deportes', slug: 'deportes' },
+  { id: 'mundo', name: 'Mundo', slug: 'mundo' },
+];
 
-  return (
-    <footer style={{ borderTop: '1px solid #e5e5e5', marginTop: 32 }}>
-      <div style={{ maxWidth: 980, margin: '0 auto', padding: 24 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'center' }}>
-          <nav aria-label="Redes sociales" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.75 }}>Redes:</span>
-            {socialLinks.map((s) => (
-              <Link key={s.label} href={s.href} style={{ fontSize: 12, textDecoration: 'none', color: 'inherit', opacity: 0.85 }}>
-                {s.label}
-              </Link>
-            ))}
-          </nav>
+export default async function Footer() {
+  const categories = await getCategories({ limit: 50 }).catch(() => []);
+  const navSections = Array.isArray(categories) && categories.length ? categories : FALLBACK_SECTIONS;
 
-          <div style={{ fontSize: 12, opacity: 0.75 }}>
-            Desarrollado por{' '}
-            <Link href="#" style={{ fontWeight: 700, textDecoration: 'none', color: 'inherit' }}>
-              Mauro Centurión
-            </Link>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
+  return <FooterClient sections={navSections} />;
 }
