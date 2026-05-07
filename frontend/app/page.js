@@ -91,7 +91,7 @@ export const metadata = {
   },
 };
 
-export default async function HomePage({ searchParams }) {
+export async function NewsLanding({ categorySlug = '' }) {
   const youtubeChannelUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHANNEL_URL || '#';
   const youtubeApiKey = process.env.YOUTUBE_API_KEY || '';
   const youtubeChannelHandle = process.env.YOUTUBE_CHANNEL_HANDLE || '';
@@ -140,19 +140,6 @@ export default async function HomePage({ searchParams }) {
 
   const allCategories = await getCategories({ limit: 100 }).catch(() => []);
   const categoryDisplayMap = buildCategoryDisplayMap(allCategories);
-
-  const sp = await Promise.resolve(searchParams);
-  const categoryParam = sp?.category;
-
-  const categorySlugRaw = Array.isArray(categoryParam) ? categoryParam[0] : categoryParam;
-  let categorySlug = '';
-  if (typeof categorySlugRaw === 'string' && categorySlugRaw.trim()) {
-    try {
-      categorySlug = decodeURIComponent(categorySlugRaw.trim());
-    } catch {
-      categorySlug = categorySlugRaw.trim();
-    }
-  }
 
   const selectedCategory = categorySlug ? await getCategoryBySlug(categorySlug).catch(() => null) : null;
 
@@ -224,7 +211,7 @@ export default async function HomePage({ searchParams }) {
             </div>
             <h2 className="newsSectionTitle">{display.label}</h2>
           </div>
-          <Link href={`/?category=${encodeURIComponent(category.slug)}`} className="newsSectionViewAll">
+          <Link href={`/categoria/${encodeURIComponent(category.slug)}`} className="newsSectionViewAll">
             Ver todo ↗
           </Link>
         </header>
@@ -410,9 +397,13 @@ export default async function HomePage({ searchParams }) {
 
       {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860, adsenseSlot: adsenseSlots.highMid })}
 
-      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 18, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
+      <section className="youtubeVideoStrip">
+        <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
+      </section>
 
       {earlySecondarySections.length > 0 ? <section className="newsSectionsWrap">{earlySecondarySections.map(renderSectionBlock)}</section> : null}
+
+      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 18, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
 
       {middleSecondarySections.length > 0 ? <section className="newsSectionsWrap">{middleSecondarySections.map(renderSectionBlock)}</section> : null}
 
@@ -426,11 +417,24 @@ export default async function HomePage({ searchParams }) {
         <p>Contactanos para sumar tu marca al portal y llegar a toda la audiencia de Jujuy.</p>
       </section>
 
-      <section className="youtubeVideoStrip">
-        <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
-      </section>
-
       {renderAdSlot(adsBottom, { marginTop: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.low })}
     </main>
   );
+}
+
+export default async function HomePage({ searchParams }) {
+  const sp = await Promise.resolve(searchParams);
+  const categoryParam = sp?.category;
+
+  const categorySlugRaw = Array.isArray(categoryParam) ? categoryParam[0] : categoryParam;
+  let categorySlug = '';
+  if (typeof categorySlugRaw === 'string' && categorySlugRaw.trim()) {
+    try {
+      categorySlug = decodeURIComponent(categorySlugRaw.trim());
+    } catch {
+      categorySlug = categorySlugRaw.trim();
+    }
+  }
+
+  return <NewsLanding categorySlug={categorySlug} />;
 }

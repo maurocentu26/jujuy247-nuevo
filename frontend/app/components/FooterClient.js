@@ -27,7 +27,7 @@ export default function FooterClient({ sections }) {
           <h2>Secciones</h2>
           <nav aria-label="Secciones del sitio" className="siteFooterLinkList">
             {navSections.map((section) => (
-              <Link key={section.id} href={`/?category=${encodeURIComponent(section.slug)}`} className="siteFooterLink">
+              <Link key={section.id} href={`/categoria/${encodeURIComponent(section.slug)}`} className="siteFooterLink">
                 {section.name}
               </Link>
             ))}

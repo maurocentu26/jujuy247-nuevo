@@ -196,7 +196,7 @@ async function fetchJson(url) {
   return res.json();
 }
 
-export async function getLatestArticles({ limit = 20, categorySlug } = {}) {
+export async function getLatestArticles({ limit = 20, offset = 0, categorySlug } = {}) {
   const fields = [
     'id',
     'title',
@@ -227,7 +227,7 @@ export async function getLatestArticles({ limit = 20, categorySlug } = {}) {
   const filter = encodeURIComponent(JSON.stringify(filterObject));
 
   const url = directusUrl(
-    `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at&limit=${limit}&filter=${filter}`
+    `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at&limit=${limit}&offset=${Math.max(0, offset)}&filter=${filter}`
   );
 
   const json = await fetchJson(url);

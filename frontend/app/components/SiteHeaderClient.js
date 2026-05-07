@@ -155,7 +155,7 @@ export default function SiteHeaderClient({ categories, weather }) {
             router.push('/');
             return;
           }
-          router.push(`/?category=${encodeURIComponent(slug)}`);
+          router.push(`/categoria/${encodeURIComponent(slug)}`);
         }}
         className={compactSelect ? 'siteHeaderSelect siteHeaderSelectCompact' : 'siteHeaderSelect'}
       >
@@ -218,7 +218,7 @@ export default function SiteHeaderClient({ categories, weather }) {
           <div className="siteHeaderNavBar">
             <nav className="siteHeaderNav" aria-label="Categorías">
               {navCategories.map((c) => (
-                <Link key={c.id} href={`/?category=${encodeURIComponent(c.slug)}`} className="siteHeaderNavLink">
+                <Link key={c.id} href={`/categoria/${encodeURIComponent(c.slug)}`} className="siteHeaderNavLink">
                   {c.name}
                 </Link>
               ))}
@@ -257,7 +257,7 @@ export default function SiteHeaderClient({ categories, weather }) {
                 {navCategories.map((c) => (
                   <Link
                     key={c.id}
-                    href={`/?category=${encodeURIComponent(c.slug)}`}
+                    href={`/categoria/${encodeURIComponent(c.slug)}`}
                     className="siteHeaderMobileNavLink"
                     onClick={closeMobileMenu}
                   >

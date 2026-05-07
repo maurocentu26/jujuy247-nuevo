@@ -20,7 +20,7 @@ export default async function sitemap() {
   for (const category of sortedCategories) {
     if (!category?.slug) continue;
     entries.push({
-      url: `${siteUrl}/?category=${encodeURIComponent(category.slug)}`,
+      url: `${siteUrl}/categoria/${encodeURIComponent(category.slug)}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.7,
