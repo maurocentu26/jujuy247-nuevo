@@ -294,9 +294,7 @@ export async function NewsLanding({ categorySlug = '' }) {
                   href={`/noticias/${firstSectionFeatured.slug}`}
                   className="frontPageLeadImage"
                   style={{
-                    backgroundImage: firstSectionFeaturedImage
-                      ? `linear-gradient(180deg, rgba(9,20,36,0.10) 0%, rgba(9,20,36,0.84) 72%), url(${firstSectionFeaturedImage})`
-                      : 'linear-gradient(180deg, rgba(13,24,41,0.35), rgba(13,24,41,0.92))',
+                    backgroundImage: `url(${firstSectionFeaturedImage})`
                   }}
                 />
                 <div className="frontPageLeadMeta">
@@ -395,15 +393,15 @@ export async function NewsLanding({ categorySlug = '' }) {
 
       {renderAdSlot(adsTop, { marginTop: 24, marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.high })}
 
+      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860, adsenseSlot: adsenseSlots.highMid })}
+
+      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
+
       <section className="youtubeVideoStrip">
         <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
       </section>
 
-      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860, adsenseSlot: adsenseSlots.highMid })}
-
       {earlySecondarySections.length > 0 ? <section className="newsSectionsWrap">{earlySecondarySections.map(renderSectionBlock)}</section> : null}
-
-      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
 
       {middleSecondarySections.length > 0 ? <section className="newsSectionsWrap">{middleSecondarySections.map(renderSectionBlock)}</section> : null}
 
