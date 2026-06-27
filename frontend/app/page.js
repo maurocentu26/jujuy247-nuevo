@@ -279,8 +279,6 @@ export async function NewsLanding({ categorySlug = '' }) {
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
 
-      {renderAdSlot(adsTop, { marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.high })}
-
       {sectionsSorted.length === 0 ? (
         <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
           {categorySlug
@@ -395,15 +393,17 @@ export async function NewsLanding({ categorySlug = '' }) {
         </div>
       )}
 
-      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860, adsenseSlot: adsenseSlots.highMid })}
+      {renderAdSlot(adsTop, { marginTop: 24, marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.high })}
 
       <section className="youtubeVideoStrip">
         <YouTubeCarouselCard videos={latestVideos} channelUrl={youtubeChannelUrl} liveVideo={liveVideo} />
       </section>
 
+      {renderAdSlot(adsHighMid, { marginTop: 24, marginBottom: 28, maxWidth: 860, adsenseSlot: adsenseSlots.highMid })}
+
       {earlySecondarySections.length > 0 ? <section className="newsSectionsWrap">{earlySecondarySections.map(renderSectionBlock)}</section> : null}
 
-      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 18, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
+      {renderAdSlot(adsMid, { marginTop: 24, marginBottom: 28, maxWidth: 1200, adsenseSlot: adsenseSlots.mid })}
 
       {middleSecondarySections.length > 0 ? <section className="newsSectionsWrap">{middleSecondarySections.map(renderSectionBlock)}</section> : null}
 
