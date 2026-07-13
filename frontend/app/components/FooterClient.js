@@ -17,10 +17,12 @@ export default function FooterClient({ sections }) {
     <footer className="siteFooter">
       <div className="siteFooterInner">
         <div className="siteFooterBrandCol">
-          <Link href="/" className="siteFooterBrandLink" aria-label="Ir a inicio">
-            <Image src="/logo3.png" alt="Jujuy247" width={360} height={120} className="siteFooterBrandLogo" />
-          </Link>
-          <p>ESTAMOS EN EL AIRE DE JUJUY</p>
+          <div className="siteFooterBrandCard">
+            <Link href="/" className="siteFooterBrandLink" aria-label="Ir a inicio">
+              <Image src="/logo3.png" alt="Jujuy247" width={360} height={120} className="siteFooterBrandLogo" />
+            </Link>
+            <p>Noticias de Jujuy en tiempo real, con información local, nacional y global.</p>
+          </div>
         </div>
 
         <div className="siteFooterLinksCol">
@@ -28,6 +30,7 @@ export default function FooterClient({ sections }) {
           <nav aria-label="Secciones del sitio" className="siteFooterLinkList">
             {navSections.map((section) => (
               <Link key={section.id} href={`/categoria/${encodeURIComponent(section.slug)}`} className="siteFooterLink">
+                <span className="siteFooterLinkIcon">↗</span>
                 {section.name}
               </Link>
             ))}
@@ -38,9 +41,11 @@ export default function FooterClient({ sections }) {
           <h2>El medio</h2>
           <nav aria-label="Enlaces institucionales" className="siteFooterLinkList">
             <button type="button" className="siteFooterLink siteFooterButtonLink" onClick={() => setIsContactOpen(true)}>
+              <span className="siteFooterLinkIcon">✉</span>
               Contacto
             </button>
             <a href={AD_WHATSAPP_LINK} target="_blank" rel="noreferrer" className="siteFooterLink">
+              <span className="siteFooterLinkIcon">📢</span>
               Anunciar
             </a>
           </nav>
@@ -49,6 +54,9 @@ export default function FooterClient({ sections }) {
 
       <div className="siteFooterBottom">
         <div>© 2026 Jujuy 24/7. Todos los derechos reservados.</div>
+        <a href="https://www.linkedin.com/in/maurocenturion26/" target="_blank" rel="noreferrer" className="siteFooterCreditLink">
+          Desarrollado por Mauro Centurión
+        </a>
       </div>
 
       {isContactOpen ? (
