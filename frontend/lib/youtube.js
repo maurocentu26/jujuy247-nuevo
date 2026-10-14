@@ -10,8 +10,11 @@ function youtubeApiUrl(path, params) {
 async function fetchYoutubeJson(url) {
   const res = await fetch(url, { next: { revalidate: 300 } });
   if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`YouTube API request failed: ${res.status} ${res.statusText} (${url}) ${body}`);
+    const body = await res.json().catch(() => null);
+    const reason = body?.error?.errors?.[0]?.reason || 'unknown';
+    // Report failures without exposing the API key in the request URL.
+    console.warn('YouTube API request failed', { status: res.status, reason });
+    throw new Error(`YouTube API request failed: ${res.status} (${reason})`);
   }
   return res.json();
 }
