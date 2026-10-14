@@ -1,41 +1,22 @@
-import { getCategories, getLatestArticles, getSiteUrl, sortCategoriesByPosition } from '../lib/directus';
+import { getCategories, getSitemapArticles, getSiteUrl, getCanonicalUrlForArticle } from '../lib/directus';
+import { articleUrl, categoryUrl } from '../lib/site';
+import { parsePublishedAt } from '../lib/datetime';
+
+export const revalidate = 300;
 
 export default async function sitemap() {
-  const siteUrl = getSiteUrl();
-  const [categories, latestArticles] = await Promise.all([
-    getCategories({ limit: 50 }).catch(() => []),
-    getLatestArticles({ limit: 100 }).catch(() => []),
-  ]);
-  const sortedCategories = sortCategoriesByPosition(categories);
-
+  const [categories, articles] = await Promise.all([getCategories({ limit: -1 }), getSitemapArticles()]);
   const entries = [
-    {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 1,
-    },
+    { url: getSiteUrl() },
+    ...categories.filter((category) => category.slug).map((category) => ({ url: categoryUrl(category.slug) })),
   ];
-
-  for (const category of sortedCategories) {
-    if (!category?.slug) continue;
-    entries.push({
-      url: `${siteUrl}/categoria/${encodeURIComponent(category.slug)}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
-    });
+  for (const article of articles) {
+    if (!article.slug || article.seo_no_index) continue;
+    const url = articleUrl(article.slug);
+    if (getCanonicalUrlForArticle(article) !== url) continue;
+    const published = parsePublishedAt(article.published_at);
+    if (published && published.getTime() > Date.now()) continue;
+    entries.push({ url, ...(published ? { lastModified: published } : {}) });
   }
-
-  for (const article of latestArticles) {
-    if (!article?.slug) continue;
-    entries.push({
-      url: `${siteUrl}/noticias/${article.slug}`,
-      lastModified: article.published_at ? new Date(article.published_at) : new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    });
-  }
-
-  return entries;
+  return Array.from(new Map(entries.map((entry) => [entry.url, entry])).values());
 }

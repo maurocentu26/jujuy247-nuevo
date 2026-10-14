@@ -1,55 +1,26 @@
-'use client';
-
 import Link from 'next/link';
-import { useState } from 'react';
 import { directusAssetUrl, getDirectusFileId } from '../../lib/directus';
 import { formatRelativePublishedAt } from '../../lib/datetime';
+import { categoryUrl } from '../../lib/site';
 
 function getCardImage(article) {
   return article?.cover_image ? directusAssetUrl(getDirectusFileId(article.cover_image)) : '';
 }
 
-export default function CategoryFeedClient({ category, initialArticles, initialHasMore = false }) {
-  const [articles, setArticles] = useState(Array.isArray(initialArticles) ? initialArticles : []);
-  const [hasMore, setHasMore] = useState(Boolean(initialHasMore));
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState('');
-
+export default function CategoryFeedClient({ category, initialArticles, initialHasMore = false, page = 1 }) {
+  const articles = Array.isArray(initialArticles) ? initialArticles : [];
   const slug = String(category?.slug || '').trim();
   const title = String(category?.name || '').trim() || slug || 'Categoría';
   const leadArticle = articles[0] || null;
   const secondaryArticles = articles.slice(1, 4);
   const listArticles = articles.slice(4);
 
-  const loadMore = async () => {
-    if (!slug || isLoadingMore || !hasMore) return;
-
-    setIsLoadingMore(true);
-    setLoadError('');
-
-    try {
-      const response = await fetch(`/api/categoria/${encodeURIComponent(slug)}/articles?offset=${articles.length}&limit=10`);
-      if (!response.ok) {
-        throw new Error('No se pudieron cargar más noticias.');
-      }
-
-      const payload = await response.json();
-      const nextArticles = Array.isArray(payload?.articles) ? payload.articles : [];
-      setArticles((current) => [...current, ...nextArticles]);
-      setHasMore(Boolean(payload?.hasMore));
-    } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'No se pudieron cargar más noticias.');
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
-
   return (
     <section className="categoryFeedShell">
       <header className="categoryFeedHeader">
         <div>
           <p className="categoryFeedEyebrow">Categoría</p>
-          <h1 className="categoryFeedTitle">{title}</h1>
+          <h1 className="categoryFeedTitle">{title}{page > 1 ? ` · Página ${page}` : ''}</h1>
         </div>
         <div className="categoryFeedCounter">{articles.length} noticias</div>
       </header>
@@ -58,6 +29,7 @@ export default function CategoryFeedClient({ category, initialArticles, initialH
         <article className="categoryFeedHero">
           <Link
             href={`/noticias/${leadArticle.slug}`}
+            aria-label={leadArticle.title}
             className="categoryFeedHeroImage"
             style={{ backgroundImage: getCardImage(leadArticle) ? `url(${getCardImage(leadArticle)})` : 'none' }}
           />
@@ -111,15 +83,11 @@ export default function CategoryFeedClient({ category, initialArticles, initialH
         </div>
       ) : null}
 
-      {loadError ? <p className="categoryFeedError">{loadError}</p> : null}
-
-      {hasMore ? (
-        <div className="categoryFeedActions">
-          <button type="button" className="categoryFeedLoadMore" onClick={loadMore} disabled={isLoadingMore}>
-            {isLoadingMore ? 'Cargando...' : 'Cargar más'}
-          </button>
-        </div>
-      ) : null}
+      <nav className="categoryFeedActions" aria-label="Paginación de noticias">
+        {page > 1 ? <Link className="categoryFeedLoadMore" href={categoryUrl(slug, page - 1)} rel="prev">← Más recientes</Link> : null}
+        <span aria-current="page">Página {page}</span>
+        {initialHasMore ? <Link className="categoryFeedLoadMore" href={categoryUrl(slug, page + 1)} rel="next">Noticias anteriores →</Link> : null}
+      </nav>
     </section>
   );
 }

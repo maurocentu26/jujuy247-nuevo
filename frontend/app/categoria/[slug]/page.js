@@ -1,72 +1,51 @@
 import Link from 'next/link';
+import { notFound, permanentRedirect } from 'next/navigation';
 import CategoryFeedClient from '../../components/CategoryFeedClient';
 import { getCategoryBySlug, getLatestArticles, getSiteUrl } from '../../../lib/directus';
+import { breadcrumbs, categoryUrl, serializeJsonLd } from '../../../lib/site';
 
 export const dynamic = 'force-dynamic';
+const PAGE_SIZE = 10;
 
-export async function generateMetadata({ params }) {
-  const { slug } = await Promise.resolve(params);
-  const category = await getCategoryBySlug(slug).catch(() => null);
+async function getCategoryPage(params, searchParams) {
+  const { slug } = await params;
+  const query = await searchParams;
+  const rawPage = query?.page;
+  if (rawPage !== undefined && (typeof rawPage !== 'string' || !/^[1-9]\d*$/.test(rawPage))) notFound();
+  const page = Number(rawPage || 1);
+  if (!Number.isSafeInteger(page) || page > 100000) notFound();
+  const category = await getCategoryBySlug(slug);
+  if (!category) notFound();
+  if (rawPage === '1') permanentRedirect(categoryUrl(category.slug));
+  const articles = await getLatestArticles({ categorySlug: category.slug, limit: PAGE_SIZE + 1, offset: (page - 1) * PAGE_SIZE });
+  if (page > 1 && articles.length === 0) notFound();
+  return { category, page, articles };
+}
 
-  if (!category) {
-    return {
-      title: 'Categoría no encontrada - Jujuy247',
-      description: 'La categoría no existe o todavía no tiene contenido publicado.',
-      robots: { index: false, follow: false },
-    };
-  }
-
-  const title = `${category.name} - Jujuy247`;
-  const description = `Todo sobre ${category.name} en Jujuy247.`;
-  const canonical = `${getSiteUrl()}/categoria/${encodeURIComponent(category.slug)}`;
-
+export async function generateMetadata({ params, searchParams }) {
+  const { category, page } = await getCategoryPage(params, searchParams);
+  const name = category.name.trim();
+  const title = `${name}${page > 1 ? ` · Página ${page}` : ''}`;
+  const description = `Noticias de ${name}: actualidad, novedades y cobertura en Jujuy247.${page > 1 ? ` Archivo, página ${page}.` : ''}`;
+  const canonical = categoryUrl(category.slug, page);
   return {
-    title,
-    description,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      siteName: 'Jujuy247',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-    },
+    title, description, alternates: { canonical },
+    openGraph: { title, description, url: canonical, type: 'website', locale: 'es_AR', siteName: 'Jujuy247', images: ['/seo-imgs/share-img.jpeg'] },
+    twitter: { card: 'summary_large_image', title, description, images: ['/seo-imgs/share-img.jpeg'] },
   };
 }
 
-export default async function CategoryPage({ params }) {
-  const { slug } = await Promise.resolve(params);
-  const categorySlug = typeof slug === 'string' ? slug.trim() : '';
-  const category = categorySlug ? await getCategoryBySlug(categorySlug).catch(() => null) : null;
-
-  if (!category) {
-    return (
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
-        <div className="categoryFeedEmpty">
-          <p className="categoryFeedEyebrow">Categoría</p>
-          <h1 className="categoryFeedTitle">Categoría no encontrada</h1>
-          <p>La categoría no existe o todavía no tiene contenido publicado.</p>
-          <Link href="/" className="categoryFeedHomeLink">
-            Volver al inicio
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
-  const initialArticlesRaw = await getLatestArticles({ categorySlug: category.slug, limit: 11 }).catch(() => []);
-  const initialArticles = initialArticlesRaw.slice(0, 10);
-  const initialHasMore = initialArticlesRaw.length > 10;
-
+export default async function CategoryPage({ params, searchParams }) {
+  const { category, page, articles } = await getCategoryPage(params, searchParams);
+  const trail = breadcrumbs([
+    { name: 'Inicio', url: getSiteUrl() },
+    { name: category.name.trim(), url: categoryUrl(category.slug) },
+  ]);
   return (
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
-      <CategoryFeedClient category={category} initialArticles={initialArticles} initialHasMore={initialHasMore} />
+      <nav aria-label="Ruta de navegación" className="breadcrumbs"><Link href="/">Inicio</Link> / {category.name.trim()}</nav>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(trail) }} />
+      <CategoryFeedClient category={category} initialArticles={articles.slice(0, PAGE_SIZE)} initialHasMore={articles.length > PAGE_SIZE} page={page} />
     </main>
   );
 }

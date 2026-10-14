@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { permanentRedirect } from 'next/navigation';
+import { categoryUrl, getSiteUrl, SITE_DESCRIPTION } from '../lib/site';
 import {
   directusAssetUrl,
   getDirectusFileId,
@@ -71,23 +74,17 @@ function getFeaturedBadgeLabel(article) {
 }
 
 export const metadata = {
-  title: 'Jujuy247 | Estamos en el aire de Jujuy',
-  description: 'Ultimas noticias de Jujuy, actualidad, deportes, política, cultura y más. Estamos en el aire de Jujuy las 24 horas.',
-  keywords: [
-    'Noticias de Jujuy',
-    'Jujuy247',
-    'Jujuy noticias',
-    'actualidad Jujuy',
-    'noticias del NOA',
-    'radio Jujuy',
-    'portal de noticias Jujuy',
-    'Berta Geronimo',
-    'periodismo Jujuy',
-    'Jujuy24/7',
-  ],
-  robots: {
-    index: true,
-    follow: true,
+  title: { absolute: 'Noticias de Jujuy: actualidad y últimas noticias | Jujuy247' },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: getSiteUrl() },
+  openGraph: {
+    title: 'Noticias de Jujuy: actualidad y últimas noticias | Jujuy247',
+    description: SITE_DESCRIPTION, url: getSiteUrl(), type: 'website', locale: 'es_AR',
+    siteName: 'Jujuy247', images: ['/seo-imgs/share-img.jpeg'],
+  },
+  twitter: {
+    card: 'summary_large_image', title: 'Noticias de Jujuy | Jujuy247',
+    description: SITE_DESCRIPTION, images: ['/seo-imgs/share-img.jpeg'],
   },
 };
 
@@ -277,7 +274,7 @@ export async function NewsLanding({ categorySlug = '' }) {
 
   return (
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
-      <h1 style={{ position: 'absolute', left: -9999, top: -9999 }}>Jujuy247</h1>
+      <h1 className="homeNewsTitle">Noticias de Jujuy: actualidad y últimas noticias</h1>
 
       {sectionsSorted.length === 0 ? (
         <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
@@ -293,10 +290,11 @@ export async function NewsLanding({ categorySlug = '' }) {
                 <Link
                   href={`/noticias/${firstSectionFeatured.slug}`}
                   className="frontPageLeadImage"
-                  style={{
-                    backgroundImage: `url(${firstSectionFeaturedImage})`
-                  }}
-                />
+                  aria-label={firstSectionFeatured.title}
+                >
+                  {firstSectionFeaturedImage ? <Image src={firstSectionFeaturedImage} alt={firstSectionFeatured.title}
+                    fill sizes="(max-width: 980px) 100vw, 480px" preload style={{ objectFit: 'cover' }} /> : null}
+                </Link>
                 <div className="frontPageLeadMeta">
                   <div className="frontPageCategory" style={{ color: firstSectionDisplay.color }}>
                     {firstSectionDisplay.label.toUpperCase()}
@@ -434,5 +432,6 @@ export default async function HomePage({ searchParams }) {
     }
   }
 
-  return <NewsLanding categorySlug={categorySlug} />;
+  if (categorySlug) permanentRedirect(categoryUrl(categorySlug));
+  return <NewsLanding />;
 }

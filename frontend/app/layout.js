@@ -3,6 +3,7 @@ import './globals.css';
 
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, serializeJsonLd } from '../lib/site';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -15,60 +16,20 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: 'Jujuy247',
-  description: 'Portal de noticias',
-  icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/apple-icon.png',
-  },
-  keywords: [
-    'Jujuy247',
-    'Noticias de Jujuy',
-    'Actualidad Jujuy',
-    'Radio Jujuy',
-    'Portal de noticias',
-    'Jujuy24/7',
-    'NOA Noticias',
-    'Berta Geronimo',
-    'Periodismo Jujuy',
-    'diarios de jujuy',
-    'feriado en jujuy',
-    'clima en jujuy',
-    'deportes jujuy',
-    'politica jujuy',
-    'economia jujuy',
-    'cultura jujuy',
-    'espectaculos jujuy',
-    'sucesos jujuy',
-    'jujuy hoy',
-    'jujuy noticias de ultima hora',
-  ],
-  robots: {
-    index: true,
-    follow: true,
-  },
+  metadataBase: new URL(getSiteUrl()),
+  title: { default: 'Noticias de Jujuy | Jujuy247', template: '%s | Jujuy247' },
+  description: SITE_DESCRIPTION,
+  icons: { icon: '/favicon.png', shortcut: '/favicon.png', apple: '/apple-icon.png' },
+  robots: { index: true, follow: true, 'max-image-preview': 'large' },
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || undefined },
   openGraph: {
-    title: 'Jujuy247',
-    description: 'Estamos en el aire de Jujuy.',
-    siteName: 'Jujuy247',
-    type: 'website',
-    url: "https://www.jujuy247.com.ar",
-    images: [
-      {
-        url: '/seo-imgs/share-img.jpeg',
-        width: 1200,
-        height: 630,
-        alt: 'Jujuy247',
-      },
-    ],
+    title: 'Noticias de Jujuy | Jujuy247', description: SITE_DESCRIPTION,
+    siteName: SITE_NAME, type: 'website', locale: 'es_AR',
+    images: [{ url: '/seo-imgs/share-img.jpeg', width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Jujuy247',
-    description: 'Estamos en el aire de Jujuy.',
-    images: ['/seo-imgs/share-img.jpeg'],
+    card: 'summary_large_image', title: 'Noticias de Jujuy | Jujuy247',
+    description: SITE_DESCRIPTION, images: ['/seo-imgs/share-img.jpeg'],
   },
 };
 
@@ -87,6 +48,15 @@ export default function RootLayout({ children }) {
         ) : null}
       </head>
       <body suppressHydrationWarning style={{ margin: 0 }}>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': [
+            { '@type': 'NewsMediaOrganization', '@id': `${getSiteUrl()}/#organization`, name: SITE_NAME,
+              url: getSiteUrl(), logo: { '@type': 'ImageObject', url: `${getSiteUrl()}/logo3.png` } },
+            { '@type': 'WebSite', '@id': `${getSiteUrl()}/#website`, name: SITE_NAME,
+              url: getSiteUrl(), inLanguage: 'es-AR', publisher: { '@id': `${getSiteUrl()}/#organization` } },
+          ],
+        }) }} />
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <SiteHeader />
           <div style={{ flex: '1 0 auto' }}>{children}</div>

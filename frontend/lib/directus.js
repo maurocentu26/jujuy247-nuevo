@@ -1,3 +1,5 @@
+import { getSiteUrl as configuredSiteUrl, articleUrl } from './site.js';
+
 function directusUrl(path) {
   const baseRaw = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
   const base = baseRaw.replace(/\/$/, '');
@@ -5,8 +7,7 @@ function directusUrl(path) {
 }
 
 function siteUrl(path = '') {
-  const baseRaw = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const base = baseRaw.replace(/\/$/, '');
+  const base = configuredSiteUrl();
   if (!path) return base;
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }
@@ -202,7 +203,6 @@ export async function getLatestArticles({ limit = 20, offset = 0, categorySlug }
     'title',
     'slug',
     'excerpt',
-    'content',
     'front_page',
     'published_at',
     'status',
@@ -227,7 +227,7 @@ export async function getLatestArticles({ limit = 20, offset = 0, categorySlug }
   const filter = encodeURIComponent(JSON.stringify(filterObject));
 
   const url = directusUrl(
-    `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at&limit=${limit}&offset=${Math.max(0, offset)}&filter=${filter}`
+    `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at,-id&limit=${limit}&offset=${Math.max(0, offset)}&filter=${filter}`
   );
 
   const json = await fetchJson(url);
@@ -354,6 +354,7 @@ export async function getArticleBySlug(slug) {
     'cover_image',
     'category.id',
     'category.name',
+    'category.slug',
     'tags.id',
     'tags.name',
   ];
@@ -395,8 +396,35 @@ export async function getArticleBySlug(slug) {
 
 export function getCanonicalUrlForArticle(article) {
   if (!article) return siteUrl('/');
-  if (article.seo_canonical_url) return article.seo_canonical_url;
-  return siteUrl(`/noticias/${article.slug}`);
+  if (article.seo_canonical_url) {
+    try {
+      const canonical = new URL(article.seo_canonical_url, `${getSiteUrl()}/`);
+      if (['http:', 'https:'].includes(canonical.protocol)) return canonical.href;
+    } catch {
+      // Invalid CMS overrides must not produce invalid canonical tags.
+    }
+  }
+  return articleUrl(article.slug);
+}
+
+// Read the entire archive in small batches, without downloading article bodies.
+// Do not catch CMS failures here: returning a partial sitemap would hide old URLs.
+export async function getSitemapArticles() {
+  const fields = 'id,slug,title,published_at,seo_no_index,seo_canonical_url';
+  const filter = encodeURIComponent(JSON.stringify({ status: { _eq: 'published' } }));
+  const articles = [];
+  const limit = 100;
+  let offset = 0;
+  while (true) {
+    const batch = (await fetchJson(directusUrl(
+      `/items/articles?fields=${encodeURIComponent(fields)}&sort=id&limit=${limit}&offset=${offset}&filter=${filter}`
+    ))).data ?? [];
+    articles.push(...batch);
+    if (batch.length === 0) break;
+    if (articles.length > 49000) throw new Error('Dividir el sitemap antes de superar 50.000 URLs');
+    offset += batch.length;
+  }
+  return articles;
 }
 
 export async function getAds({ position } = {}) {

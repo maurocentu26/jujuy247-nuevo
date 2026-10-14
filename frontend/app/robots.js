@@ -10,6 +10,6 @@ export default function robots() {
         allow: '/',
       },
     ],
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/news-sitemap.xml`],
   };
 }

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import React from 'react';
 import {
   directusAssetUrl,
@@ -9,7 +11,8 @@ import {
   getOtherArticlesInCategory,
   getSiteUrl,
 } from '../../../lib/directus';
-import { formatPublishedAt } from '../../../lib/datetime';
+import { formatPublishedAt, parsePublishedAt } from '../../../lib/datetime';
+import { articleDescription, breadcrumbs, categoryUrl, serializeJsonLd } from '../../../lib/site';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CurrentArticleTitle from '../../components/CurrentArticleTitle';
@@ -117,15 +120,11 @@ export async function generateMetadata({ params }) {
   const article = await getArticleBySlug(slug);
 
   if (!article) {
-    return {
-      title: 'Noticia no encontrada - Jujuy247',
-      description: 'La noticia no existe o todavía no está publicada.',
-      robots: { index: false, follow: false },
-    };
+    notFound();
   }
 
   const title = article.seo_title || article.title;
-  const description = article.seo_description || article.excerpt || '';
+  const description = articleDescription(article);
   const canonical = getCanonicalUrlForArticle(article);
   const imageFileId = getDirectusFileId(article.seo_image) || getDirectusFileId(article.cover_image);
   const imageUrl = imageFileId ? directusAssetUrl(imageFileId) : '';
@@ -137,6 +136,7 @@ export async function generateMetadata({ params }) {
     robots: {
       index: !article.seo_no_index,
       follow: !article.seo_no_follow,
+      'max-image-preview': 'large',
     },
     openGraph: {
       title,
@@ -144,9 +144,10 @@ export async function generateMetadata({ params }) {
       url: canonical,
       type: 'article',
       siteName: 'Jujuy247',
-      publishedTime: article.published_at || undefined,
+      locale: 'es_AR',
+      publishedTime: parsePublishedAt(article.published_at)?.toISOString(),
       tags: Array.isArray(article.tags) ? article.tags.map((t) => t.name).filter(Boolean) : undefined,
-      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      images: [{ url: imageUrl || '/seo-imgs/share-img.jpeg', alt: article.title }],
     },
     twitter: {
       card: imageUrl ? 'summary_large_image' : 'summary',
@@ -164,12 +165,7 @@ export default async function ArticlePage({ params }) {
   const article = await getArticleBySlug(slug);
 
   if (!article) {
-    return (
-      <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
-        <h1>No encontrada</h1>
-        <p>La noticia no existe o todavía no está publicada.</p>
-      </main>
-    );
+    notFound();
   }
 
   const canonical = getCanonicalUrlForArticle(article);
@@ -190,30 +186,43 @@ export default async function ArticlePage({ params }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
-    headline: article.seo_title || article.title,
-    description: article.seo_description || article.excerpt || undefined,
-    datePublished: article.published_at || undefined,
-    dateModified: article.published_at || undefined,
+    headline: article.title.trim(),
+    description: articleDescription(article) || undefined,
+    datePublished: parsePublishedAt(article.published_at)?.toISOString(),
+    inLanguage: 'es-AR',
     articleSection: article.category?.name || undefined,
     keywords: Array.isArray(article.tags) ? article.tags.map((t) => t.name).filter(Boolean).join(', ') : undefined,
     mainEntityOfPage: canonical,
     url: canonical,
     image: imageUrl || undefined,
     publisher: {
-      '@type': 'Organization',
+      '@type': 'NewsMediaOrganization',
+      '@id': `${site}/#organization`,
       name: 'Jujuy247',
       url: site,
+      logo: { '@type': 'ImageObject', url: `${site}/logo3.png` },
     },
   };
 
   return (
     <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
       <CurrentArticleTitle title={article.title} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <nav aria-label="Ruta de navegación" className="breadcrumbs">
+        <Link href="/">Inicio</Link>
+        {article.category?.slug ? <> / <Link href={categoryUrl(article.category.slug)}>{article.category.name.trim()}</Link></> : null}
+      </nav>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd([
+        jsonLd,
+        breadcrumbs([
+          { name: 'Inicio', url: site },
+          ...(article.category?.slug ? [{ name: article.category.name.trim(), url: categoryUrl(article.category.slug) }] : []),
+          { name: article.title.trim(), url: canonical },
+        ]),
+      ]) }} />
       <h1 style={{ margin: '12px 0 0', color: '#c23434'}}> {article.title}</h1>
       <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
         {article.category?.name ? <span>{article.category.name}</span> : <span>Sin categoría</span>}
-        {article.published_at ? <span> · {formatPublishedAt(article.published_at)}</span> : null}
+        {article.published_at ? <span> · <time dateTime={parsePublishedAt(article.published_at)?.toISOString()}>{formatPublishedAt(article.published_at)}</time></span> : null}
         {sourceName ? (
           <span>
             {' '}
@@ -234,10 +243,13 @@ export default async function ArticlePage({ params }) {
       ) : null}
 
       {imageUrl ? (
-        <img
+        <Image
           src={imageUrl}
           alt={article.title}
-          loading="eager"
+          width={1200}
+          height={675}
+          sizes="(max-width: 980px) 100vw, 932px"
+          preload
           style={{
             width: '100%',
             height: 'auto',
@@ -256,6 +268,7 @@ export default async function ArticlePage({ params }) {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
+              h1: ({ children, ...props }) => <h2 {...props}>{children}</h2>,
               a: ({ children, ...props }) => (
                 <a {...props} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>
                   {children}
@@ -268,6 +281,8 @@ export default async function ArticlePage({ params }) {
                     <img
                       {...props}
                       alt={props.alt || ''}
+                      loading="lazy"
+                      decoding="async"
                       style={{ maxWidth: '100%', height: 'auto', borderRadius: 12, display: 'block' }}
                     />
                     {credit ? (
