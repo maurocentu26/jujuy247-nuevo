@@ -15,7 +15,7 @@ import {
   sortCategoriesByPosition,
 } from '../lib/directus';
 import { formatRelativePublishedAt } from '../lib/datetime';
-import { getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
+import { DEFAULT_YOUTUBE_CHANNEL_ID, getChannelIdForHandle, getLatestChannelVideos, getLiveVideoForChannel } from '../lib/youtube';
 import YouTubeCarouselCard from './components/YouTubeCarouselCard';
 import AdCarousel from './components/AdCarousel';
 import GoogleAdSlot from './components/GoogleAdSlot';
@@ -105,6 +105,7 @@ export async function NewsLanding({ categorySlug = '' }) {
   if (!youtubeChannelId && youtubeApiKey && youtubeChannelHandle) {
     youtubeChannelId = await getChannelIdForHandle({ apiKey: youtubeApiKey, handle: youtubeChannelHandle }).catch(() => '');
   }
+  if (!youtubeChannelId) youtubeChannelId = DEFAULT_YOUTUBE_CHANNEL_ID;
 
   const [liveVideo, latestVideos, latestHeadlines, allAds] = await Promise.all([
     getLiveVideoForChannel({ apiKey: youtubeApiKey, channelId: youtubeChannelId }).catch(() => null),

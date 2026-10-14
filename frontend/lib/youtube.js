@@ -1,3 +1,28 @@
+import { XMLParser } from 'fast-xml-parser';
+
+export const DEFAULT_YOUTUBE_CHANNEL_ID = 'UCmmtqIGC_TfbfMTUuZ4EYaQ';
+
+export function parseYoutubeFeed(xml, limit = 10) {
+  const parsed = new XMLParser({ ignoreAttributes: false, parseTagValue: false }).parse(xml);
+  const entries = parsed?.feed?.entry;
+  return (Array.isArray(entries) ? entries : entries ? [entries] : [])
+    .filter((entry) => /^[A-Za-z0-9_-]{11}$/.test(entry['yt:videoId'] || ''))
+    .slice(0, limit)
+    .map((entry) => ({
+      id: entry['yt:videoId'], title: String(entry.title || ''), publishedAt: entry.published || null,
+      thumbnailUrl: `https://i.ytimg.com/vi/${entry['yt:videoId']}/hqdefault.jpg`,
+      url: `https://www.youtube.com/watch?v=${entry['yt:videoId']}`,
+    }));
+}
+
+async function getPublicChannelVideos(channelId, limit) {
+  const url = new URL('https://www.youtube.com/feeds/videos.xml');
+  url.searchParams.set('channel_id', channelId);
+  const response = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error(`YouTube feed unavailable: ${response.status}`);
+  return parseYoutubeFeed(await response.text(), limit);
+}
+
 function youtubeApiUrl(path, params) {
   const url = new URL(`https://www.googleapis.com/youtube/v3/${path}`);
   for (const [k, v] of Object.entries(params || {})) {
@@ -8,7 +33,7 @@ function youtubeApiUrl(path, params) {
 }
 
 async function fetchYoutubeJson(url) {
-  const res = await fetch(url, { next: { revalidate: 300 } });
+  const res = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     const reason = body?.error?.errors?.[0]?.reason || 'unknown';
@@ -55,7 +80,10 @@ function mapSearchItemToVideo(item) {
 }
 
 export async function getLatestChannelVideos({ apiKey, channelId, limit = 10 } = {}) {
-  if (!apiKey || !channelId) return [];
+  if (!channelId) return [];
+  const count = Math.min(Math.max(limit, 1), 25);
+
+  if (!apiKey) return getPublicChannelVideos(channelId, count);
 
   const url = youtubeApiUrl('search', {
     key: apiKey,
@@ -63,14 +91,19 @@ export async function getLatestChannelVideos({ apiKey, channelId, limit = 10 } =
     channelId,
     order: 'date',
     type: 'video',
-    maxResults: Math.min(Math.max(limit, 1), 25),
+    maxResults: count,
     safeSearch: 'none',
   });
 
-  const json = await fetchYoutubeJson(url);
-  const items = Array.isArray(json.items) ? json.items : [];
-
-  return items.map(mapSearchItemToVideo).filter(Boolean);
+  try {
+    const json = await fetchYoutubeJson(url);
+    const items = Array.isArray(json.items) ? json.items : [];
+    const videos = items.map(mapSearchItemToVideo).filter(Boolean);
+    if (videos.length) return videos;
+  } catch {
+    // The public feed keeps the strip available when API access/quota fails.
+  }
+  return getPublicChannelVideos(channelId, count);
 }
 
 export async function getLiveVideoForChannel({ apiKey, channelId } = {}) {
