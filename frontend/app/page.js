@@ -275,8 +275,6 @@ export async function NewsLanding({ categorySlug = '' }) {
 
   return (
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
-      <h1 className="homeNewsTitle">Noticias de Jujuy: actualidad y últimas noticias</h1>
-
       {sectionsSorted.length === 0 ? (
         <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 12, background: 'var(--color-surface)' }}>
           {categorySlug
