@@ -1,6 +1,6 @@
 # Panel de contenidos · punto de partida
 
-16/10/2026. Alcance inicial propuesto a partir del código del proyecto. No se ha implementado un panel ni modificado Directus.
+16/10/2026. Alcance inicial propuesto a partir del código del proyecto. Prototipo de interfaz en `mockups/panel-contenidos/`; no hay un panel productivo conectado ni se modificó Directus.
 
 ## Qué existe
 

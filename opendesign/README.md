@@ -5,6 +5,7 @@ Punto de partida guardado el 16/10/2026. La propuesta actual es **Actualidad loc
 ## Retomar el diseño
 
 - Propuesta actual: `mockups/actualidad/index.html`.
+- Panel editorial de demostración: `mockups/panel-contenidos/index.html`.
 - Alternativa anterior: `mockups/editorial/index.html`.
 - Lógica compartida: `mockups/editorial/app.jsx`.
 - Estilos comunes: `mockups/editorial/style.css`; variante actual: `mockups/actualidad/layout.css`.
@@ -20,6 +21,8 @@ python -m http.server 8289 --bind 127.0.0.1 --directory opendesign
 ```
 
 Abrir http://127.0.0.1:8289/mockups/actualidad/ o el visor http://127.0.0.1:8289/. El servidor solo expone esta carpeta en el equipo local. La maqueta requiere conexión para fuentes, React y YouTube.
+
+El panel se puede recorrer en http://127.0.0.1:8289/mockups/panel-contenidos/. Es una demostración independiente: guardar o publicar no modifica Directus ni el sitio público. No se usan credenciales reales.
 
 ## Decisiones conservadas
 

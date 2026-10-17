@@ -1,9 +1,9 @@
 {
-  "generated": "2026-10-16T15:51:43.357361+00:00",
+  "generated": "2026-10-17T00:53:56.313812+00:00",
   "sections": [
     {
       "id": "mockups",
-      "label": "Mockups",
+      "label": "Propuestas y prototipos",
       "groups": [
         {
           "slug": "actualidad",
@@ -22,12 +22,21 @@
               "path": "mockups/editorial/index.html"
             }
           ]
+        },
+        {
+          "slug": "panel-contenidos",
+          "files": [
+            {
+              "label": "index.html",
+              "path": "mockups/panel-contenidos/index.html"
+            }
+          ]
         }
       ]
     },
     {
       "id": "design-systems",
-      "label": "Design Systems",
+      "label": "Sistemas de diseño",
       "groups": [
         {
           "slug": "jujuy247-editorial",
@@ -57,19 +66,39 @@
       ]
     },
     {
-      "id": "diagnostico",
-      "label": "Diagnóstico y alcance",
+      "id": "documentacion",
+      "label": "Diagnóstico y decisiones",
       "groups": [
         {
-          "slug": "etapas-1-y-2",
+          "slug": "proyecto",
           "files": [
             {
-              "label": "Diagnóstico y alcance",
+              "label": "analisis footer editorial",
+              "path": "analisis-footer-editorial.md"
+            },
+            {
+              "label": "comparacion y nuevo layout",
+              "path": "comparacion-y-nuevo-layout.md"
+            },
+            {
+              "label": "diagnostico y alcance",
               "path": "diagnostico-y-alcance.md"
             },
             {
-              "label": "Plan de diseño",
+              "label": "panel de contenidos",
+              "path": "panel-de-contenidos.md"
+            },
+            {
+              "label": "plan de diseno",
               "path": "plan-de-diseno.md"
+            },
+            {
+              "label": "plan visual panel",
+              "path": "plan-visual-panel.md"
+            },
+            {
+              "label": "README",
+              "path": "README.md"
             }
           ]
         }
