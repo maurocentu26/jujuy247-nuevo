@@ -12,6 +12,8 @@ Campos consultados en `frontend/lib/directus.js`: título, slug, extracto, conte
 
 Una interfaz editorial sencilla sobre el Directus existente: permitir preparar y publicar una noticia sin mostrar al cliente la complejidad de un administrador de base de datos. Directus seguirá siendo la fuente de datos, usuarios, archivos y permisos.
 
+Flujo confirmado por el cliente: una sola persona publica directamente. La primera versión tendrá un único perfil editorial con acceso a sus tareas de contenido; no requiere un circuito de aprobación ni gestión de redactores. Podrá guardar borradores, previsualizar y publicar. Esto no exige concederle permisos de administrador de Directus.
+
 ## Primera entrega funcional
 
 1. **Acceso:** iniciar/cerrar sesión y gestionar sesión vencida; usar los usuarios y permisos de Directus.
@@ -26,7 +28,7 @@ La primera entrega no incluye cuentas de anuncios, automatización IA, bot, esta
 
 - Obtener un snapshot del esquema y revisar permisos con una cuenta de prueba; no ejecutar los scripts de seed contra producción.
 - Confirmar valores reales de `status`, relaciones de categorías/etiquetas y campos obligatorios. No asumir que los campos opcionales del frontend existen.
-- Confirmar el flujo de trabajo: una persona que publica o redactores con aprobación de un editor. Pregunta pendiente al cliente; no crear roles ni asignar privilegios por inferencia.
+- Aplicar el flujo confirmado de publicación directa con permisos mínimos sobre contenido y archivos; comprobar los permisos reales antes de conectar escrituras.
 - Mantener el token fuera del código cliente y de localStorage. Definir sesión mediante cookie HttpOnly y validar autorización en servidor para cada lectura privada y escritura; no usar una credencial administrativa compartida como atajo.
 - Al implementar, contrastar el flujo de autenticación con la documentación de la versión de Directus realmente desplegada. La configuración local por sí sola no basta.
 - Usar primero una instancia o datos de prueba y un usuario de permisos mínimos. Conservar el acceso al administrador Directus para contingencia.
