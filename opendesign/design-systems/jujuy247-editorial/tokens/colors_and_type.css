@@ -1,0 +1,38 @@
+/* Propuesta editorial. Origen del rojo: frontend/app/globals.css. */
+:root {
+  --fg-1: #202124;
+  --fg-2: #585b61;
+  --bg-1: #ffffff;
+  --bg-2: #f8f9fa;
+  --accent-1: #c23434;
+  --accent-strong: #a52727;
+  --line-1: #d9dadd;
+  --font-editorial: 'Libre Baskerville', Georgia, serif;
+  --font-interface: 'Source Sans 3', system-ui, sans-serif;
+  --weight-regular: 400;
+  --weight-strong: 700;
+  --size-caption: 0.875rem;
+  --size-body: 1.125rem;
+  --size-h1: clamp(2rem, 4vw, 3.125rem);
+  --size-h2: clamp(1.5rem, 2.5vw, 2rem);
+  --surface-primary: var(--bg-1);
+  --surface-secondary: var(--bg-2);
+  --text-primary: var(--fg-1);
+  --text-secondary: var(--fg-2);
+  --brand-primary: var(--accent-1);
+  --border-subtle: var(--line-1);
+  --h1: var(--size-h1);
+  --h2: var(--size-h2);
+  --body: var(--size-body);
+  --caption: var(--size-caption);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --content-max: 1200px;
+  --reading-max: 68ch;
+  --radius-control: 4px;
+}

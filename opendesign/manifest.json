@@ -1,0 +1,79 @@
+{
+  "generated": "2026-10-16T15:51:43.357361+00:00",
+  "sections": [
+    {
+      "id": "mockups",
+      "label": "Mockups",
+      "groups": [
+        {
+          "slug": "actualidad",
+          "files": [
+            {
+              "label": "index.html",
+              "path": "mockups/actualidad/index.html"
+            }
+          ]
+        },
+        {
+          "slug": "editorial",
+          "files": [
+            {
+              "label": "index.html",
+              "path": "mockups/editorial/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design-systems",
+      "label": "Design Systems",
+      "groups": [
+        {
+          "slug": "jujuy247-editorial",
+          "files": [
+            {
+              "label": "assets/logos/logo3.png",
+              "path": "design-systems/jujuy247-editorial/assets/logos/logo3.png"
+            },
+            {
+              "label": "brand/style-notes.md",
+              "path": "design-systems/jujuy247-editorial/brand/style-notes.md"
+            },
+            {
+              "label": "README.md",
+              "path": "design-systems/jujuy247-editorial/README.md"
+            },
+            {
+              "label": "SKILL.md",
+              "path": "design-systems/jujuy247-editorial/SKILL.md"
+            },
+            {
+              "label": "tokens/colors_and_type.css",
+              "path": "design-systems/jujuy247-editorial/tokens/colors_and_type.css"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diagnostico",
+      "label": "Diagnóstico y alcance",
+      "groups": [
+        {
+          "slug": "etapas-1-y-2",
+          "files": [
+            {
+              "label": "Diagnóstico y alcance",
+              "path": "diagnostico-y-alcance.md"
+            },
+            {
+              "label": "Plan de diseño",
+              "path": "plan-de-diseno.md"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
