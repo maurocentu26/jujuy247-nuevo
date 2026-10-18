@@ -1,93 +1,10 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-
-const EMAIL = 'bertageronimoperiodista@gmail.com';
-const WHATSAPP_NUMBER = '+543885867757';
-const WHATSAPP_LINK = 'https://wa.me/543885867757?text=Hola%20Jujuy247%2C%20quiero%20hacer%20una%20consulta%20de%20publicidad.';
-const AD_WHATSAPP_LINK = 'https://wa.me/543885867757?text=Hola%20Jujuy247%2C%20quiero%20consultar%20por%20publicidad%20en%20el%20portal.';
-
-export default function FooterClient({ sections }) {
-  const [isContactOpen, setIsContactOpen] = useState(false);
-  const navSections = Array.isArray(sections) ? sections : [];
-
-  return (
-    <footer className="siteFooter">
-      <div className="siteFooterInner">
-        <div className="siteFooterBrandCol">
-          <div className="siteFooterBrandCard">
-            <Link href="/" className="siteFooterBrandLink" aria-label="Ir a inicio">
-              <Image src="/logo3.png" alt="Jujuy247" width={360} height={120} className="siteFooterBrandLogo" />
-            </Link>
-            <p>Noticias de Jujuy en tiempo real, con información local, nacional y global.</p>
-          </div>
-        </div>
-
-        <div className="siteFooterLinksCol">
-          <h2>Secciones</h2>
-          <nav aria-label="Secciones del sitio" className="siteFooterLinkList">
-            {navSections.map((section) => (
-              <Link key={section.id} href={`/categoria/${encodeURIComponent(section.slug)}`} className="siteFooterLink">
-                <span className="siteFooterLinkIcon">↗</span>
-                {section.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <div className="siteFooterLinksCol">
-          <h2>El medio</h2>
-          <nav aria-label="Enlaces institucionales" className="siteFooterLinkList">
-            <button type="button" className="siteFooterLink siteFooterButtonLink" onClick={() => setIsContactOpen(true)}>
-              <span className="siteFooterLinkIcon">✉</span>
-              Contacto
-            </button>
-            <a href={AD_WHATSAPP_LINK} target="_blank" rel="noreferrer" className="siteFooterLink">
-              <span className="siteFooterLinkIcon">📢</span>
-              Anunciar
-            </a>
-          </nav>
-        </div>
-      </div>
-
-      <div className="siteFooterBottom">
-        <div>© 2026 Jujuy 24/7. Todos los derechos reservados.</div>
-        <a href="https://www.linkedin.com/in/maurocenturion26/" target="_blank" rel="noreferrer" className="siteFooterCreditLink">
-          Desarrollado por Mauro Centurión
-        </a>
-      </div>
-
-      {isContactOpen ? (
-        <div className="siteFooterModalOverlay" role="presentation" onClick={() => setIsContactOpen(false)}>
-          <div className="siteFooterModal" role="dialog" aria-modal="true" aria-label="Contacto" onClick={(event) => event.stopPropagation()}>
-            <div className="siteFooterModalHeader">
-              <h3>Contacto</h3>
-              <button type="button" className="siteFooterModalClose" aria-label="Cerrar" onClick={() => setIsContactOpen(false)}>
-                ×
-              </button>
-            </div>
-
-            <div className="siteFooterModalBody">
-              <div className="siteFooterContactItem">
-                <span>Correo</span>
-                <Link href={`mailto:${EMAIL}`}>{EMAIL}</Link>
-              </div>
-
-              <div className="siteFooterContactItem">
-                <span>Mensaje de WhatsApp</span>
-                <div className="siteFooterContactInline">
-                  <span>{WHATSAPP_NUMBER}</span>
-                  <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer">
-                    Enviar mensaje
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </footer>
-  );
+export default function FooterClient({ sections = [] }) {
+  return <footer className="editorial-footer"><div className="editorial-footer-grid">
+    <div><Link href="/" aria-label="Jujuy247, inicio"><Image src="/logo3.png" alt="Jujuy247" width={758} height={265} /></Link><p>Periodismo desde San Salvador de Jujuy.</p></div>
+    <nav aria-label="Secciones del pie de página"><h2>Secciones</h2><div className="footer-sections">{sections.map(s => <Link key={s.id} href={`/categoria/${encodeURIComponent(s.slug)}`}>{s.name}</Link>)}</div></nav>
+    <div><h2>Contacto editorial</h2><a href="mailto:bertageronimoperiodista@gmail.com">bertageronimoperiodista@gmail.com</a><p>San Salvador de Jujuy, Argentina</p><a href="https://www.youtube.com/@jujuy247" target="_blank" rel="noreferrer">Nuestro canal de YouTube</a></div>
+    <div><h2>Publicidad</h2><p>Consultá por espacios para tu marca.</p><a href="https://wa.me/543885867757?text=Hola%20Jujuy247%2C%20quiero%20consultar%20por%20publicidad." target="_blank" rel="noreferrer">Contactar por WhatsApp</a></div>
+  </div><div className="editorial-footer-bottom"><span>© {new Date().getFullYear()} Jujuy247. Todos los derechos reservados.</span><a href="https://www.linkedin.com/in/maurocenturion26/" target="_blank" rel="noreferrer">Desarrollado por Mauro Centurión</a></div></footer>;
 }

@@ -1,16 +1,17 @@
-import { Inter, Space_Grotesk } from 'next/font/google';
+import { Archivo, Source_Sans_3 } from 'next/font/google';
 import './globals.css';
+import './redesign.css';
 
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
 import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, serializeJsonLd } from '../lib/site';
 
-const inter = Inter({
+const inter = Source_Sans_3({
   subsets: ['latin'],
   variable: '--font-inter',
 });
 
-const spaceGrotesk = Space_Grotesk({
+const spaceGrotesk = Archivo({
   subsets: ['latin'],
   variable: '--font-space-grotesk',
 });

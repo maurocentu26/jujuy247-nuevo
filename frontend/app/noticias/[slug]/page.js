@@ -205,7 +205,7 @@ export default async function ArticlePage({ params }) {
   };
 
   return (
-    <main style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
+    <main className="redesign-article">
       <CurrentArticleTitle title={article.title} />
       <nav aria-label="Ruta de navegación" className="breadcrumbs">
         <Link href="/">Inicio</Link>
@@ -219,8 +219,9 @@ export default async function ArticlePage({ params }) {
           { name: article.title.trim(), url: canonical },
         ]),
       ]) }} />
-      <h1 style={{ margin: '12px 0 0', color: '#c23434'}}> {article.title}</h1>
-      <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
+      <h1>{article.title}</h1>
+      {article.excerpt ? <p className="article-deck">{article.excerpt}</p> : null}
+      <div className="article-meta">
         {article.category?.name ? <span>{article.category.name}</span> : <span>Sin categoría</span>}
         {article.published_at ? <span> · <time dateTime={parsePublishedAt(article.published_at)?.toISOString()}>{formatPublishedAt(article.published_at)}</time></span> : null}
         {sourceName ? (
@@ -250,21 +251,12 @@ export default async function ArticlePage({ params }) {
           height={675}
           sizes="(max-width: 980px) 100vw, 932px"
           preload
-          style={{
-            width: '100%',
-            height: 'auto',
-            aspectRatio: '16 / 9',
-            maxHeight: 420,
-            objectFit: 'cover',
-            borderRadius: 12,
-            display: 'block',
-            marginTop: 14,
-          }}
+          className="article-cover"
         />
       ) : null}
 
       {article.content ? (
-        <article style={{ marginTop: 16, lineHeight: 1.7 }}>
+        <article className="article-reading">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
