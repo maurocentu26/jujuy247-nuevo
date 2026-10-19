@@ -1,0 +1,48 @@
+const concepts = [
+  {id:'claro',name:'En claro',idea:'Una firma directa, abierta y editorial.',yellow:'#F6CE2D',ink:'#202124',paper:'#EEF0F1',muted:'#596168',font:'Archivo',description:'El 24/7 ocupa la primera lectura y Jujuy queda integrado debajo. La barra une el número y se repite con moderación como separador de información.',continuity:'Conserva la lectura horizontal de los logos del archivo y el protagonismo del número.',risk:'La firma principal se lee bien ampliada; el avatar a 32 px necesita evaluación y ajuste óptico antes de aprobarlo.',headline:'Claridad en el diario, presencia en la calle.'},
+  {id:'par',name:'A la par',idea:'Una marca compacta, con otra manera de ocupar el espacio.',yellow:'#E6AD23',ink:'#30363B',paper:'#F2F1ED',muted:'#775A18',font:'Barlow Condensed Black + Archivo',description:'El número se organiza en dos niveles. La composición vertical aporta presencia en un avatar o una placa; la firma extendida permite llevarla al diario sin comprimirla.',continuity:'Retoma el formato de distintivo vertical de la J roja, ahora centrado en 24/7.',risk:'El apilado puede hacer más lenta la lectura. Se debe verificar que la barra se perciba y no se interpreten dos números sueltos.',headline:'La cercanía también tiene una firma propia.'},
+  {id:'encuentro',name:'Punto de encuentro',idea:'Dos módulos, una sola lectura.',yellow:'#E9F04A',ink:'#153E4E',paper:'#E9EEF0',muted:'#596B72',font:'Archivo condensado',description:'24 y 7 se apoyan en dos bloques separados por una diagonal. La barra pasa a ser un espacio de unión; Jujuy sigue formando parte de la firma principal.',continuity:'Desarrolla el pequeño módulo 24/7 que ya acompaña a la marca actual, eliminando volumen y degradados.',risk:'La barra en negativo tiene que seguir siendo inequívoca al reducir la firma y al reproducirla en un solo color.',headline:'Una firma para conectar todas las coberturas.'}
+];
+const logo = (id,variant='principal') => `assets/logos/${id}-${variant}.svg`;
+function luminance(hex) {
+  const rgb=hex.match(/[a-f\d]{2}/gi).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+  return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+}
+function contrast(a,b) { const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+function board(c) {
+  const headerLogo=c.id==='par'?'assets/logos/par-horizontal.svg':logo(c.id);
+  return `<section class="board ${c.id}" id="board-${c.id}" aria-labelledby="title-${c.id}" style="--yellow:${c.yellow};--ink:${c.ink};--paper:${c.paper};--secondary:${c.muted}" hidden>
+    <div class="board-intro"><div><p class="document-label">Dirección de identidad</p><h2 id="title-${c.id}">${c.name}</h2><p class="board-idea">${c.idea}</p></div><div><p>${c.description}</p><p class="continuity"><strong>Qué viene de Jujuy247:</strong> ${c.continuity}</p></div></div>
+    <div class="signature-row"><div class="signature-proof" data-proof="yellow"><img class="primary-logo" src="${logo(c.id)}" alt="Propuesta ${c.name}: 24/7 protagonista con Jujuy en la firma"><span>Firma principal · Propuesta</span></div><div class="signature-notes"><h3>La firma, sin depender del color</h3><p>La misma estructura se prueba sobre amarillo, blanco y fondo oscuro.</p><div class="proof-options" role="group" aria-label="Fondo para ${c.name}"><button type="button" data-background="yellow" aria-pressed="true">Amarillo</button><button type="button" data-background="white" aria-pressed="false">Blanco</button><button type="button" data-background="dark" aria-pressed="false">Oscuro</button></div><a class="download" href="${logo(c.id)}" download>Descargar la versión visible en SVG</a><p class="small">Trazados vectoriales. No requieren la fuente instalada. Son archivos de exploración.</p></div></div>
+    <div class="palette-section"><h3>Color con una función</h3><div class="palette">${[[c.yellow,'Identidad'],[c.ink,'Tinta'],['#FFFFFF','Lectura'],[c.paper,'Superficie'],[c.muted,'Apoyo']].map(([hex,label])=>`<div class="swatch"><span style="background:${hex}" aria-hidden="true"></span><strong>${label}</strong><code>${hex}</code></div>`).join('')}</div><p class="contrast">Tinta sobre amarillo: <strong>${contrast(c.ink,c.yellow).toFixed(1)}:1</strong>. Tinta sobre blanco: <strong>${contrast(c.ink,'#FFFFFF').toFixed(1)}:1</strong>. Ambos superan 4,5:1 para texto normal. Amarillo sobre blanco no se propone para texto pequeño.</p></div>
+    <div class="applications-heading"><h3>Una identidad en distintos lugares</h3><p>Mismo contenido ilustrativo para comparar las tres rutas.</p></div>
+    <div class="applications"><figure class="website-application"><figcaption>Cabecera del diario</figcaption><div class="mock-web"><div class="mock-utility">San Salvador de Jujuy <span>Hora y clima · muestra</span></div><div class="mock-masthead"><img src="${headerLogo}" alt="Firma ${c.name} en la cabecera del diario"><span>El diario de Jujuy</span></div><div class="mock-nav" aria-label="Rótulos ilustrativos, sin navegación">Noticias <span>El País</span><span>El Mundo</span><span>Cultura</span></div><div class="mock-story"><div><small>Las noticias · Maqueta</small><h4>Mujeres en movimiento: una convocatoria que reúne voces de Jujuy</h4><p>Un ejemplo de jerarquía visual para las historias de la provincia.</p></div><img src="assets/cobertura.jpg" alt="Foto de archivo de una cobertura de Jujuy247"></div></div></figure>
+    <figure class="social-application"><figcaption>Placa para redes</figcaption><div class="mock-social"><div class="social-brand"><img src="${headerLogo}" alt="Firma ${c.name} en una placa social"><span>Cobertura local</span></div><img class="social-photo" src="assets/cobertura.jpg" alt="Foto de archivo usada como muestra de aplicación"><div class="social-title"><p>Las voces de Jujuy, en primera persona</p><span>Ejemplo visual · No es una noticia nueva</span></div></div></figure>
+    <figure class="video-application"><figcaption>Marca y zócalo sobre una cobertura</figcaption><div class="mock-video"><img class="video-photo" src="assets/cobertura.jpg" alt="Fotografía de archivo para simular una pieza audiovisual"><span class="video-sample">Maqueta sobre fotografía de archivo</span><div class="video-bug"><img src="${logo(c.id,'avatar')}" alt="Avatar ${c.name} sobre una cobertura"></div><div class="lower-third"><img src="${headerLogo}" alt="Firma en el zócalo"><div><strong>Historias de nuestra provincia</strong><span>Espacio para identificar la cobertura</span></div></div></div></figure></div>
+    <div class="scale-section"><div><h3>La prueba de reducción</h3><p>El avatar se presenta junto al nombre de cuenta <strong>Jujuy247</strong>. La firma abreviada no reemplaza el nombre del medio en todos los usos.</p><p class="risk">${c.risk}</p></div><div class="avatar-tests">${[128,64,32].map(size=>`<figure><span class="avatar-circle"><img width="${size}" height="${size}" src="${logo(c.id,'avatar')}" alt="Avatar ${c.name} a ${size} píxeles"></span><figcaption>${size} px</figcaption></figure>`).join('')}<figure><span class="avatar-circle"><img width="64" height="64" src="${logo(c.id,'avatar-mono')}" alt="Avatar ${c.name} monocromático"></span><figcaption>Un color</figcaption></figure></div></div>
+    <div class="type-sample"><span>Tipografía de la ruta</span><strong>${c.font}</strong><p>${c.headline}</p><small>Frase de prueba para evaluar el tono, no eslogan aprobado.</small></div>
+  </section>`;
+}
+const choices=document.querySelector('#choices');
+choices.innerHTML=concepts.map((c,i)=>`<button type="button" class="choice ${c.id}" data-concept="${c.id}" aria-pressed="${i===0}" aria-controls="board-${c.id}" style="--yellow:${c.yellow};--ink:${c.ink}"><span class="choice-mark"><img src="${logo(c.id)}" alt=""></span><span class="choice-name">${c.name}</span><span class="choice-description">${c.idea}</span></button>`).join('');
+document.querySelector('#boards').innerHTML=concepts.map(board).join('');
+function selectConcept(id) {
+  choices.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.concept===id)));
+  document.querySelectorAll('.board').forEach(b=>b.hidden=b.id!==`board-${id}`);
+}
+choices.addEventListener('click',e=>{ const b=e.target.closest('button[data-concept]');if(b)selectConcept(b.dataset.concept); });
+document.querySelector('#boards').addEventListener('click',e=>{
+  const button=e.target.closest('button[data-background]');if(!button)return;
+  const section=button.closest('.board'),id=section.id.slice(6),proof=section.querySelector('.signature-proof');
+  const variant={yellow:'principal',white:'mono',dark:'inverso'}[button.dataset.background];
+  proof.dataset.proof=button.dataset.background;
+  proof.querySelector('img').src=logo(id,variant);
+  section.querySelector('.download').href=logo(id,variant);
+  section.querySelectorAll('[data-background]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+});
+selectConcept('claro');
+
+// Small checks protect the calculated samples and the three-route comparison.
+console.assert(Math.abs(contrast('#000000','#FFFFFF')-21)<.001,'Contrast reference must be 21:1');
+console.assert(concepts.every(c=>contrast(c.ink,c.yellow)>=4.5&&contrast(c.ink,'#FFFFFF')>=4.5),'Palette text contrast');
+console.assert(document.querySelectorAll('.board').length===3,'Three structurally distinct proposals');

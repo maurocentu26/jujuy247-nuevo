@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-17T00:53:56.313812+00:00",
+  "generated": "2026-10-19T01:47:14.046469+00:00",
   "sections": [
     {
       "id": "mockups",
@@ -24,6 +24,15 @@
           ]
         },
         {
+          "slug": "identidad-noviembre",
+          "files": [
+            {
+              "label": "index.html",
+              "path": "mockups/identidad-noviembre/index.html"
+            }
+          ]
+        },
+        {
           "slug": "panel-contenidos",
           "files": [
             {
@@ -36,17 +45,17 @@
     },
     {
       "id": "design-systems",
-      "label": "Sistemas de diseño",
+      "label": "Design Systems",
       "groups": [
         {
           "slug": "jujuy247-editorial",
           "files": [
             {
-              "label": "assets/logos/logo3.png",
+              "label": "logo3.png",
               "path": "design-systems/jujuy247-editorial/assets/logos/logo3.png"
             },
             {
-              "label": "brand/style-notes.md",
+              "label": "style-notes.md",
               "path": "design-systems/jujuy247-editorial/brand/style-notes.md"
             },
             {
@@ -58,47 +67,8 @@
               "path": "design-systems/jujuy247-editorial/SKILL.md"
             },
             {
-              "label": "tokens/colors_and_type.css",
+              "label": "colors_and_type.css",
               "path": "design-systems/jujuy247-editorial/tokens/colors_and_type.css"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "documentacion",
-      "label": "Diagnóstico y decisiones",
-      "groups": [
-        {
-          "slug": "proyecto",
-          "files": [
-            {
-              "label": "analisis footer editorial",
-              "path": "analisis-footer-editorial.md"
-            },
-            {
-              "label": "comparacion y nuevo layout",
-              "path": "comparacion-y-nuevo-layout.md"
-            },
-            {
-              "label": "diagnostico y alcance",
-              "path": "diagnostico-y-alcance.md"
-            },
-            {
-              "label": "panel de contenidos",
-              "path": "panel-de-contenidos.md"
-            },
-            {
-              "label": "plan de diseno",
-              "path": "plan-de-diseno.md"
-            },
-            {
-              "label": "plan visual panel",
-              "path": "plan-visual-panel.md"
-            },
-            {
-              "label": "README",
-              "path": "README.md"
             }
           ]
         }
