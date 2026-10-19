@@ -29,3 +29,9 @@ Mismo contenido ilustrativo en cabecera del diario, placa social y zócalo sobre
 ## Revisión del plan
 
 Se descarta amarillo-negro como único argumento de diferenciación: ya aparece en medios como AJ+ y franceinfo. Se concentra la identidad en composición, número, barra y nombre territorial. No se presentan eslóganes como aprobados ni se añaden estadísticas de audiencia, pertenencias políticas o promesas de inmediatez verificadas.
+
+## Cuarta dirección: Tiempo presente
+
+El cliente pide una variante negro-amarillo y explorar un reloj con una resolución más profesional. La cuarta ruta usa negro puro #000000 y amarillo #FFD400; blanco #FFFFFF, superficie #F2F2F2 y apoyo #595959. Mantiene Archivo y el número como protagonista. Un reloj construido con un círculo y dos agujas geométricas acompaña a 24/7; Jujuy aparece debajo. En el avatar se incorpora el número dentro del reloj para conservar identificación. Sin biseles, brillos, sombras ni marcadores de esfera que pierdan lectura al reducir.
+
+La dirección añade un concepto temporal, sin prometer operación continua. La diferenciación frente a un icono genérico de reloj y el ajuste de los números en 32 px son puntos de evaluación. Las tres propuestas anteriores siguen disponibles y el sitio público no cambia.

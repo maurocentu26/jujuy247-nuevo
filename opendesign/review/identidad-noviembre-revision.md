@@ -25,3 +25,11 @@ El documento distingue hechos de fuentes primarias e inferencias aplicadas a Juj
 ## Pendientes antes de adoptar
 
 La lectura inmediata del apilado de A la par y de la diagonal negativa de Punto de encuentro necesita pruebas con personas externas. La escala de 32 px es una prueba de identificación del número, no de lectura del nombre territorial diminuto. Faltan ajuste óptico y revisión de similitudes y disponibilidad legal. No se inspeccionaron capas PSD ni se certifica originalidad registral. El verificador no modificó los archivos originales ni el frontend.
+
+## Ampliación: Tiempo presente
+
+Revisada directamente la cuarta ruta con reloj, negro #000000 y amarillo #FFD400. La firma principal es limpia y proporcionada: 24/7 se lee primero, Jujuy permanece legible y el reloj actúa como apoyo. No se observan recortes de trazados. El avatar mantiene círculo, agujas y números dentro del recorte redondo en 128/64/32 px físicos; en 32 px se identifica el número, con menor definición esperable. Su semejanza con iconografía genérica de reloj queda correctamente planteada como riesgo a revisar.
+
+Cuatro opciones en grilla móvil 2×2, sin desborde: viewport 320, documento 305 px. Imágenes cargadas. Fondo oscuro inicial correcto; selección de blanco/amarillo/oscuro cambia tanto el SVG como el enlace. Descarga real `reloj-principal.svg` completada. Ratios informados 14,7:1 negro/amarillo y 21:1 negro/blanco.
+
+Capturas: `identidad-reloj-comparacion.png` y `identidad-reloj-principal.png`. Sin bloqueantes de presentación. El detalle de copia «tres rutas» fue comunicado y corregido por el agente principal. Viewport restaurado y variante con fondo oscuro conservada como entregable. No se asegura exclusividad legal ni se modificó producción.

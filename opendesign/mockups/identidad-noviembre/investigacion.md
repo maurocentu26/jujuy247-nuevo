@@ -51,7 +51,7 @@ Fuente: [TN, presentación de su renovación digital, 2022](https://tn.com.ar/ge
 ## Decisiones para esta exploración
 
 1. Componer una marca identificable con 24/7 y Jujuy, sin depender del amarillo para ser reconocida.
-2. Reutilizar la barra como vínculo con el archivo existente; probar tres estructuras distintas.
+2. Reutilizar la barra como vínculo con el archivo existente; probar distintas estructuras.
 3. Usar tinta oscura sobre amarillo para información pequeña. Las muestras de contraste se calculan; no se declara que toda la identidad cumpla una norma solo por esos pares.
 4. Mantener titulares informativos, personas reales y secciones de alcance amplio. No reducir la identidad a denuncias, emergencias o política.
 5. Separar marca de urgencia editorial: el amarillo institucional no convierte cada nota en alerta ni implica una redacción disponible las 24 horas.

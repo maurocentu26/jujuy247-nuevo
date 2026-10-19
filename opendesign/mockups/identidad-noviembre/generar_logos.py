@@ -57,6 +57,18 @@ for key,draw,w,h,fg,yellow in [('claro',a,560,270,'#202124','#F6CE2D'),('par',b,
     svg(f'{key}-avatar-mono.svg','<rect width="240" height="240" fill="#ffffff"/>'+compact.replace(fg,'#202124').replace(yellow,'#ffffff'),240,240,f'Jujuy247 / {key} / avatar monocromático')
 
 svg('par-horizontal.svg','<g transform="translate(0 0) scale(.62)">'+text('24',25,135,180,barlow,'#30363B')+text('/7',68,280,180,barlow,'#30363B')+'</g>'+text('JUJUY',185,132,57,bold,'#30363B',2),450,215,'Jujuy247 / A la par / firma horizontal')
-assert len(list(OUT.glob('*.svg')))==16
+
+def clock(ink, compact=False):
+    if compact:
+        face=f'<circle cx="120" cy="120" r="96" fill="none" stroke="{ink}" stroke-width="10"/><g stroke="{ink}" stroke-width="10" stroke-linecap="round"><line x1="120" y1="88" x2="120" y2="48"/><line x1="120" y1="88" x2="151" y2="66"/></g>'
+        label,width=word('24/7',0,178,68,heavy,ink)
+        return face+f'<g transform="translate({(240-width)/2:.3f} 0)">{label}</g>'
+    return f'<circle cx="120" cy="125" r="91" fill="none" stroke="{ink}" stroke-width="12"/><g stroke="{ink}" stroke-width="12" stroke-linecap="round"><line x1="120" y1="125" x2="96" y2="103"/><line x1="120" y1="125" x2="163" y2="82"/></g>'
+
+for variant,ink in [('principal','#000000'),('mono','#000000'),('inverso','#FFD400')]:
+    svg(f'reloj-{variant}.svg',clock(ink)+text('24/7',250,173,190,heavy,ink)+text('JUJUY',258,246,50,bold,ink,6),800,270,f'Jujuy247 / Tiempo presente / {variant}')
+svg('reloj-avatar.svg','<rect width="240" height="240" fill="#000000"/>'+clock('#FFD400',True),240,240,'Jujuy247 / Tiempo presente / avatar')
+svg('reloj-avatar-mono.svg','<rect width="240" height="240" fill="#ffffff"/>'+clock('#000000',True),240,240,'Jujuy247 / Tiempo presente / avatar monocromático')
+assert len(list(OUT.glob('*.svg')))==21
 assert all('24/7' in p.read_text(encoding='utf-8') and '<text' not in p.read_text(encoding='utf-8') for p in OUT.glob('*.svg'))
-print('16 SVG trazados y validados; no necesitan fuentes instaladas.')
+print('21 SVG trazados y validados; no necesitan fuentes instaladas.')

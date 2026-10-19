@@ -34,7 +34,7 @@ No cambiar el CMS: mantener Next.js + Directus. No reintroducir el texto SEO vis
 
 El 18/10/2026 el cliente pidió explorar otra identidad, con 24/7 protagonista y amarillo. Esa autorización se aplica a la exploración independiente `mockups/identidad-noviembre/index.html`, no reemplaza el logo vigente ni convierte las propuestas en marca aprobada. La conservación del rojo y el logo mencionada arriba describe el punto de partida del diario anterior a este brief.
 
-La nueva comparación incluye investigación con fuentes primarias, tres estructuras, aplicaciones en diario/redes/video, fondos y descargas SVG. Se puede abrir directamente sin servidor, con recursos locales; solo los enlaces de investigación necesitan internet. `output/branding/Jujuy247-exploraciones-identidad.zip`, en la raíz del proyecto, reúne la propuesta para conservarla o compartirla. El manual definitivo se construirá después de elegir y ajustar una dirección.
+La nueva comparación incluye investigación con fuentes primarias, cuatro estructuras, aplicaciones en diario/redes/video, fondos y descargas SVG. Se puede abrir directamente sin servidor, con recursos locales; solo los enlaces de investigación necesitan internet. `output/branding/Jujuy247-exploraciones-identidad.zip`, en la raíz del proyecto, reúne la propuesta para conservarla o compartirla. El manual definitivo se construirá después de elegir y ajustar una dirección.
 
 ## Límites de la referencia
 

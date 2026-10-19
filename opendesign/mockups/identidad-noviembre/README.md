@@ -1,11 +1,11 @@
-# Jujuy247: tres direcciones de identidad
+# Jujuy247: cuatro direcciones de identidad
 
 Exploraciones para el relanzamiento de noviembre de 2026. Brief: 24/7 protagonista, Jujuy legible, amarillo a explorar, cercanía y cobertura amplia. No son logos aprobados ni un manual definitivo.
 
 ## Ver y compartir
 
 - Abrir `index.html` directamente en un navegador. Funciona sin servidor, sin cuenta y sin conexión: fuentes, SVG y fotografía están incluidos. Los enlaces de investigación necesitan internet.
-- Elegir En claro, A la par o Punto de encuentro. Probar fondos y descargar la versión SVG visible.
+- Elegir En claro, A la par, Tiempo presente o Punto de encuentro. Probar fondos y descargar la versión SVG visible. Tiempo presente explora negro puro y amarillo con un reloj de apoyo al 24/7.
 - Los SVG contienen trazados: no requieren una fuente instalada. Los botones no envían datos ni publican preferencias.
 - Se ofrece también un ZIP de esta carpeta bajo `output/branding/` para compartir los archivos juntos. No contiene el panel ni el repositorio.
 
@@ -15,7 +15,7 @@ Exploraciones para el relanzamiento de noviembre de 2026. Brief: 24/7 protagonis
 
 `plan-de-diseno.md`: brief, estructuras, paletas y criterios de evaluación.
 
-`assets/logos/`: 16 SVG de exploración, incluidos principales, versiones monocromáticas/inversas y avatares. Se construyen sobre Archivo y Barlow Condensed, no sobre un lettering exclusivo final.
+`assets/logos/`: 21 SVG de exploración, incluidos principales, versiones monocromáticas/inversas y avatares. Se construyen sobre Archivo y Barlow Condensed, no sobre un lettering exclusivo final.
 
 `assets/fonts/`: fuentes originales y sus licencias SIL Open Font License. La tipografía de los PSD no fue identificada.
 
