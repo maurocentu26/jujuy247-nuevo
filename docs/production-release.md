@@ -77,3 +77,9 @@ Isolated baseline 9cb52b1 plus only directus.js, redesign.css, seo.test.mjs and 
 ## Final local review result
 
 Fix candidate e646878 passed native risk, resilience and reliability review with no findings; exact acknowledgement completed for target sha256:40dfeb3733520b4406a44d6f403d247fd2c3b12c5bb7d425514e60bcb17d3e65. This does not approve publication or certify production content. Antigravity reported no observed styling/functionality blockers on development3003, with matching fix hashes; clean3011 browser evidence remains pending. Codex browser automation was unavailable due missing kernel assets. Do not infer a rendered visual test from HTTP or CSS structural checks.
+
+## Hosted preview validation
+
+Preview: https://jujuy247-nuevo-8dlj50h1g-maurocentu26s-projects.vercel.app (dpl_s2x8iMf4vZwU422KKDJ3NhspQtV2), READY, source1479d64, scoped projectjujuy247-nuevo, rootfrontend, Node24.x. Production not promoted. Eleven HTTPchecks passed, including real categorypagination and images. XML sitemap903URLs/news4URLs; JSONLDvalid; previewresponse noindex; canonicalsproductiondomain.
+
+**Do not promote yet:** hosted homepage displays the video-unavailable fallback rather than a player. Previewruntime reports YouTubeAPI429/rateLimitExceeded; fallback-specific cause is not established. Resolve and recheck embedded videos, then complete browser checks before promotion. No hosting environment changes or CMSwrites were performed.
