@@ -18,9 +18,16 @@ export function parseYoutubeFeed(xml, limit = 10) {
 async function getPublicChannelVideos(channelId, limit) {
   const url = new URL('https://www.youtube.com/feeds/videos.xml');
   url.searchParams.set('channel_id', channelId);
-  const response = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
-  if (!response.ok) throw new Error(`YouTube feed unavailable: ${response.status}`);
-  return parseYoutubeFeed(await response.text(), limit);
+  let status = null;
+  try {
+    const response = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
+    status = response.status;
+    if (!response.ok) throw new Error(`YouTube feed unavailable: ${response.status}`);
+    return parseYoutubeFeed(await response.text(), limit);
+  } catch (error) {
+    console.warn('YouTube feed unavailable', { status, kind: error?.name || 'Error' });
+    throw error;
+  }
 }
 
 function youtubeApiUrl(path, params) {

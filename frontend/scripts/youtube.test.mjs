@@ -34,3 +34,15 @@ test('an API quota failure falls back to the public feed', async () => {
     assert.deepEqual(hosts, ['www.googleapis.com', 'www.youtube.com']);
   } finally { globalThis.fetch = saved; }
 });
+
+test('public feed failures report safe status diagnostics and still reject', async () => {
+  const savedFetch = globalThis.fetch;
+  const savedWarn = console.warn;
+  const warnings = [];
+  globalThis.fetch = async () => ({ ok: false, status: 503 });
+  console.warn = (...args) => warnings.push(args);
+  try {
+    await assert.rejects(getLatestChannelVideos({ channelId: 'channel' }), /503/);
+    assert.deepEqual(warnings, [['YouTube feed unavailable', { status: 503, kind: 'Error' }]]);
+  } finally { globalThis.fetch = savedFetch; console.warn = savedWarn; }
+});
