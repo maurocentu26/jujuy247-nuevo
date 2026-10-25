@@ -21,7 +21,7 @@ test('public feed works without API credentials', async () => {
   finally { globalThis.fetch = saved; }
 });
 
-test('a healthy public feed keeps videos available without spending API quota', async () => {
+test('an API quota failure falls back to the public feed', async () => {
   const saved = globalThis.fetch;
   const hosts = [];
   globalThis.fetch = async (url) => {
@@ -31,24 +31,24 @@ test('a healthy public feed keeps videos available without spending API quota', 
   };
   try {
     assert.equal((await getLatestChannelVideos({ apiKey: 'test-key', channelId: 'channel' })).length, 1);
-    assert.deepEqual(hosts, ['www.youtube.com']);
+    assert.deepEqual(hosts, ['www.googleapis.com', 'www.youtube.com']);
   } finally { globalThis.fetch = saved; }
 });
 
-test('an unavailable public feed falls back to the configured API', async () => {
+test('a healthy API requests ten videos without querying the public feed', async () => {
   const savedFetch = globalThis.fetch;
   const savedWarn = console.warn;
   const hosts = [];
   globalThis.fetch = async url => {
     hosts.push(new URL(url).hostname);
-    if (hosts.length === 1) return { ok: false, status: 503 };
+    assert.equal(new URL(url).searchParams.get('maxResults'), '10');
     return { ok: true, json: async () => ({ items: [{ id: { videoId: 'abcdefghijk' }, snippet: { title: 'Actualidad' } }] }) };
   };
   console.warn = () => {};
   try {
     const videos = await getLatestChannelVideos({ apiKey: 'test-key', channelId: 'channel' });
     assert.equal(videos[0].id, 'abcdefghijk');
-    assert.deepEqual(hosts, ['www.youtube.com', 'www.googleapis.com']);
+    assert.deepEqual(hosts, ['www.googleapis.com']);
   } finally { globalThis.fetch = savedFetch; console.warn = savedWarn; }
 });
 

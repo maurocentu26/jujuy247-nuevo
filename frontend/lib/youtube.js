@@ -90,13 +90,7 @@ export async function getLatestChannelVideos({ apiKey, channelId, limit = 10 } =
   if (!channelId) return [];
   const count = Math.min(Math.max(limit, 1), 25);
 
-  // Prefer the public feed so regular page views do not spend search API quota.
-  try {
-    const videos = await getPublicChannelVideos(channelId, count);
-    if (videos.length || !apiKey) return videos;
-  } catch (error) {
-    if (!apiKey) throw error;
-  }
+  if (!apiKey) return getPublicChannelVideos(channelId, count);
 
   const url = youtubeApiUrl('search', {
     key: apiKey,
@@ -108,9 +102,15 @@ export async function getLatestChannelVideos({ apiKey, channelId, limit = 10 } =
     safeSearch: 'none',
   });
 
-  const json = await fetchYoutubeJson(url);
-  const items = Array.isArray(json.items) ? json.items : [];
-  return items.map(mapSearchItemToVideo).filter(Boolean);
+  try {
+    const json = await fetchYoutubeJson(url);
+    const items = Array.isArray(json.items) ? json.items : [];
+    const videos = items.map(mapSearchItemToVideo).filter(Boolean);
+    if (videos.length) return videos;
+  } catch {
+    // Keep the public feed as a fallback when API access or quota fails.
+  }
+  return getPublicChannelVideos(channelId, count);
 }
 
 export async function getLiveVideoForChannel({ apiKey, channelId } = {}) {

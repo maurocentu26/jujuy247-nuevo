@@ -41,7 +41,7 @@ export async function NewsLanding() {
     getCategories({ limit: 100 }).catch(() => []),
     getLatestArticles({ limit: 10 }).catch(() => []),
     getAds().catch(() => []),
-    getLatestChannelVideos({ apiKey: process.env.YOUTUBE_API_KEY || '', channelId, limit: 4 }).catch(() => []),
+    getLatestChannelVideos({ apiKey: process.env.YOUTUBE_API_KEY || '', channelId, limit: 10 }).catch(() => []),
     getLiveVideoForChannel({ apiKey: process.env.YOUTUBE_API_KEY || '', channelId }).catch(() => null),
   ]);
   const sections = await Promise.all(sortCategoriesByPosition(categories).map(async category => {
