@@ -83,3 +83,9 @@ Fix candidate e646878 passed native risk, resilience and reliability review with
 Preview: https://jujuy247-nuevo-8dlj50h1g-maurocentu26s-projects.vercel.app (dpl_s2x8iMf4vZwU422KKDJ3NhspQtV2), READY, source1479d64, scoped projectjujuy247-nuevo, rootfrontend, Node24.x. Production not promoted. Eleven HTTPchecks passed, including real categorypagination and images. XML sitemap903URLs/news4URLs; JSONLDvalid; previewresponse noindex; canonicalsproductiondomain.
 
 **Do not promote yet:** hosted homepage displays the video-unavailable fallback rather than a player. Previewruntime reports YouTubeAPI429/rateLimitExceeded; fallback-specific cause is not established. Resolve and recheck embedded videos, then complete browser checks before promotion. No hosting environment changes or CMSwrites were performed.
+
+## YouTube follow-up (supersedes earlier missing-player observation)
+
+Latest preview: https://jujuy247-nuevo-iy8oapmlm-maurocentu26s-projects.vercel.app, deploymentdpl_FTWFnRnZS31Z3JAiRwkAhcWcbvGh, sourcee7807da. PublicRSS nowpreferred; APIusedonlyasfallback for latestvideos, reducing routine searchquota use. Sanitized serverdiagnostics log only HTTPstatus/errorname. Correctchannelindependentlyverified; originalRSSintermittency cause remainsunproven.
+
+18tests passed, remoteproductionbuildREADY, hostedhome200 with embeddedyoutube-nocookieplayer and4playlistbuttons; noemptyfallback or autoplay1. Playback, keyboardselection and responsivevisual acceptance must still be observed in browser beforepromotion. The earlier11-routechecks applytoinitialpreview; latestpreviewhas targetedsmokeonly. No productionpromotion or key/environmentchanges.
