@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { articleDescription, articleUrl, categoryUrl, getSiteUrl, serializeJsonLd } from '../lib/site.js';
-import { getCanonicalUrlForArticle, getSitemapArticles } from '../lib/directus.js';
+import { getCanonicalUrlForArticle, getSitemapArticles, getCurrentWeatherForJujuy } from '../lib/directus.js';
 import { parsePublishedAt } from '../lib/datetime.js';
 import { allowedImageUrl } from '../lib/image-proxy.js';
 
@@ -25,6 +25,38 @@ test('URLs encode slugs and pagination has its own URL', () => {
 test('invalid canonical overrides fall back; valid editorial overrides survive', () => {
   assert.equal(getCanonicalUrlForArticle({ slug: 'nota', seo_canonical_url: 'javascript:alert(1)' }), articleUrl('nota'));
   assert.equal(getCanonicalUrlForArticle({ slug: 'nota', seo_canonical_url: 'https://example.com/original' }), 'https://example.com/original');
+});
+
+test('whitespace-only canonical overrides keep the article self-canonical', () => {
+  for (const value of ['', '   ', '\t\n']) {
+    assert.equal(getCanonicalUrlForArticle({ slug: 'nota', seo_canonical_url: value }), articleUrl('nota'));
+  }
+});
+
+test('weather requests have an eight-second abort deadline and preserve successful results', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalTimeout = AbortSignal.timeout;
+  const controller = new AbortController();
+  const deadlines = [];
+  AbortSignal.timeout = milliseconds => { deadlines.push(milliseconds); return controller.signal; };
+  globalThis.fetch = async (_url, options) => {
+    assert.equal(options.signal, controller.signal);
+    assert.equal(options.next.revalidate, 600);
+    return { ok: true, json: async () => ({ current: { temperature_2m: 23.6, weather_code: 0 } }) };
+  };
+  try {
+    const result = await getCurrentWeatherForJujuy();
+    assert.equal(result.temperatureC, 24);
+    assert.equal(result.weatherCode, 0);
+    assert.equal(typeof result.summary, 'string');
+    globalThis.fetch = (_url, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+    });
+    const pending = getCurrentWeatherForJujuy();
+    controller.abort(new DOMException('Weather timed out', 'TimeoutError'));
+    await assert.rejects(pending, { name: 'TimeoutError' });
+    assert.deepEqual(deadlines, [8000, 8000]);
+  } finally { globalThis.fetch = originalFetch; AbortSignal.timeout = originalTimeout; }
 });
 
 test('CMS text cannot terminate a JSON-LD script', () => {

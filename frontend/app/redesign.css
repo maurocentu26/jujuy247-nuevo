@@ -109,6 +109,8 @@ button { cursor:pointer; }
 .article-reading h3 { font-size:25px; line-height:1.3; }
 .breadcrumbs { font-size:14px; color:var(--color-muted); }
 @media(max-width:1000px) {
+  .redesign-latest>div { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .redesign-latest article+article { border-left:0; padding-left:0; }
   .redesign-lead { grid-template-columns:minmax(0,1fr) 300px; gap:30px; }
   .redesign-lead h1 { font-size:35px; }
   .editorial-nav { gap:17px; font-size:14px; }

@@ -171,7 +171,7 @@ export async function getCurrentWeatherForJujuy() {
     timezone
   )}`;
 
-  const res = await fetch(url, { next: { revalidate: 600 } });
+  const res = await fetch(url, { next: { revalidate: 600 }, signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`Weather request failed: ${res.status}`);
   const json = await res.json();
 
@@ -396,9 +396,10 @@ export async function getArticleBySlug(slug) {
 
 export function getCanonicalUrlForArticle(article) {
   if (!article) return siteUrl('/');
-  if (article.seo_canonical_url) {
+  const override = typeof article.seo_canonical_url === 'string' ? article.seo_canonical_url.trim() : article.seo_canonical_url;
+  if (override) {
     try {
-      const canonical = new URL(article.seo_canonical_url, `${getSiteUrl()}/`);
+      const canonical = new URL(override, `${getSiteUrl()}/`);
       if (['http:', 'https:'].includes(canonical.protocol)) return canonical.href;
     } catch {
       // Invalid CMS overrides must not produce invalid canonical tags.
