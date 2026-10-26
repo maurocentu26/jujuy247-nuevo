@@ -1,6 +1,6 @@
 # Public redesign: release preparation
 
-The security candidate pins Next.js to **16.4.3**, keeps React/React DOM **19.0.0**, and retains the approved public redesign with the original logo. **Do not deploy yet:** browser interactions, candidate review and the hosting configuration still require confirmation.
+The security candidate pins Next.js to **16.4.3**, keeps React/React DOM **19.0.0**, and retains the approved public redesign with the original logo. **Published on 2026-10-26** after explicit user authorization. See the final production publication record below; earlier preview observations are historical.
 
 ## Verified locally on 2026-10-24 (updated clean candidate)
 
@@ -89,3 +89,11 @@ Preview: https://jujuy247-nuevo-8dlj50h1g-maurocentu26s-projects.vercel.app (dpl
 Latest preview: https://jujuy247-nuevo-iy8oapmlm-maurocentu26s-projects.vercel.app, deploymentdpl_FTWFnRnZS31Z3JAiRwkAhcWcbvGh, sourcee7807da. PublicRSS nowpreferred; APIusedonlyasfallback for latestvideos, reducing routine searchquota use. Sanitized serverdiagnostics log only HTTPstatus/errorname. Correctchannelindependentlyverified; originalRSSintermittency cause remainsunproven.
 
 18tests passed, remoteproductionbuildREADY, hostedhome200 with embeddedyoutube-nocookieplayer and4playlistbuttons; noemptyfallback or autoplay1. Playback, keyboardselection and responsivevisual acceptance must still be observed in browser beforepromotion. The earlier11-routechecks applytoinitialpreview; latestpreviewhas targetedsmokeonly. No productionpromotion or key/environmentchanges.
+
+## Production publication — 2026-10-26
+
+Status: PUBLISHED at https://www.jujuy247.com.ar . Deployment dpl_2Dv7zKYYjhq4Qea3qByh5ZJuCw1H (https://jujuy247-nuevo-cuad4fi4o-maurocentu26s-projects.vercel.app), production environment, Node24, cleantrackedfrontendfrom225d0b2 identicaltested42c8b09. Built with existingproductionvariables without changing keys/settings; production-domainpromotion followed independent12-endpointstagedchecks and parentcheck.
+
+PublicdomainresolvednewREADYdeployment; home/category/article/pagination/API/images/robots/sitemaps200, missingarticle404,907sitemapURLs/5newsURLs,2validarticleJSONLDdocuments. Oldlogoandredesignpresent,1YouTubeiframe/4playlistbuttons/noemptyfallback. Canonicalproductiondomaincorrect; publicresponsesnotnoindex, HTMLindexfollow. Userconfirmedactualplayback/selectiononidenticalfrontendpreview; publicproductionplaybackwasnotindependentlybrowser-tested. UpstreamYouTubeavailabilityremainsanexternalrisk, notcertifiedpermanentfix.
+
+Previousdeployment: dpl_7LDvxf51gVCQjkNv9VJ8zRuAY8Jx. Retainidentityforincidentanalysis; do not blindlyrollbackto anunpatchedNextdeployment. No CMS/seeds/sourceuserwork included, noGitpush/mainmerge. IntegratingthereleasebranchintoGitmainremainsseparateauthorizedwork sofutureGitdeploysdonotdivergefromCLIpublication.
