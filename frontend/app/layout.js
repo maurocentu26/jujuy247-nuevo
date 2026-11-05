@@ -4,6 +4,7 @@ import './redesign.css';
 
 import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
+import SiteLayoutWrapper from './components/SiteLayoutWrapper';
 import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, serializeJsonLd } from '../lib/site';
 
 const inter = Source_Sans_3({
@@ -58,11 +59,11 @@ export default function RootLayout({ children }) {
               url: getSiteUrl(), inLanguage: 'es-AR', publisher: { '@id': `${getSiteUrl()}/#organization` } },
           ],
         }) }} />
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          <SiteHeader />
-          <div style={{ flex: '1 0 auto' }}>{children}</div>
-          <Footer />
-        </div>
+        <SiteLayoutWrapper header={<SiteHeader />} footer={<Footer />}>
+
+          {children}
+
+        </SiteLayoutWrapper>
       </body>
     </html>
   );
