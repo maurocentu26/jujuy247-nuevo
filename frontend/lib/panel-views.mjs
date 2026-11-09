@@ -6,8 +6,8 @@ export const EDITORIAL_VIEWS = [
   { id: 'drafts', label: 'Borradores' },
   { id: 'today', label: 'Publicadas hoy' },
   { id: 'missing-cover', label: 'Sin foto' },
-  { id: 'frontpage', label: 'En portada' },
 ];
+// «En portada» no es un contador: en producción casi todas las notas tienen front_page activo.
 
 function dayKey(date) {
   return new Intl.DateTimeFormat('en-CA', {

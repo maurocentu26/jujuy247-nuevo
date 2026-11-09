@@ -101,7 +101,8 @@ export default function ArticleEditor({ initialArticle = null }) {
     slug: initialArticle?.slug || '',
     excerpt: initialArticle?.excerpt || '',
     content: initialArticle?.content || '',
-    category: initialArticle?.category?.id || initialArticle?.category || 1,
+    // Sin valor por defecto: una nota nueva no puede caer en una sección sin que nadie la elija.
+    category: initialArticle?.category?.id || initialArticle?.category || '',
     cover_image: initialCoverId,
     cover_url: initialCoverId ? `${directusBase}/assets/${initialCoverId}` : '',
     caption: initialArticle?.caption || '',
@@ -134,9 +135,6 @@ export default function ArticleEditor({ initialArticle = null }) {
         const json = await res.json();
         if (json.data && Array.isArray(json.data)) {
           setCategories(json.data);
-          if (!formData.category && json.data.length > 0) {
-            setFormData(prev => ({ ...prev, category: json.data[0].id }));
-          }
         }
       } catch {
         // Fallback
@@ -395,6 +393,12 @@ export default function ArticleEditor({ initialArticle = null }) {
       setErrorMsg('El título de la noticia es obligatorio.');
       return;
     }
+    if (!formData.category) {
+      setErrorMsg('Elegí la sección de la noticia.');
+      setConfirmAction(null);
+      setMobileTab('settings');
+      return;
+    }
 
     setIsSaving(true);
     setErrorMsg('');
@@ -486,7 +490,7 @@ export default function ArticleEditor({ initialArticle = null }) {
               Pasar a borrador
             </button>
           ) : (
-            <button type="button" className="btn-secondary" disabled={isSaving || !formData.title.trim()} onClick={() => handleSave('draft')} title="Ctrl+S">
+            <button type="button" className="btn-secondary" disabled={isSaving || !formData.title.trim()} onClick={() => handleSave('draft')} aria-keyshortcuts="Control+S">
               Guardar borrador
             </button>
           )}
@@ -495,7 +499,7 @@ export default function ArticleEditor({ initialArticle = null }) {
             className="btn-primary"
             disabled={isSaving || !formData.title.trim() || !formData.content.trim() || !youtubeValid}
             onClick={() => setConfirmAction(isPublished ? 'update' : 'publish')}
-            title="Ctrl+Enter"
+            aria-keyshortcuts="Control+Enter"
           >
             {isPublished ? 'Actualizar' : 'Publicar'}
           </button>
@@ -755,16 +759,23 @@ export default function ArticleEditor({ initialArticle = null }) {
                 {formData.cover_image ? <FiCheck size={16} /> : <span>○</span>}
                 <span>Foto principal cargada</span>
               </div>
+              <div className={`check-row ${formData.category ? 'done' : ''}`}>
+                {formData.category ? <FiCheck size={16} /> : <span>○</span>}
+                <span>Sección elegida</span>
+              </div>
             </div>
           </div>
           {/* Section Selector */}
           <div className="settings-panel-box">
-            <h3 className="settings-box-title">Sección del diario</h3>
+            <h3 className="settings-box-title"><label htmlFor="article-category">Sección del diario</label></h3>
             <select
+              id="article-category"
               value={formData.category}
               onChange={e => handleChange('category', e.target.value)}
               className="settings-select"
+              required
             >
+              <option value="" disabled>Elegí una sección</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -810,20 +821,6 @@ export default function ArticleEditor({ initialArticle = null }) {
                     <FiTrash2 size={13} style={{ marginRight: '4px' }} />
                     Quitar foto
                   </button>
-                </div>
-
-                <div style={{ marginTop: '12px' }}>
-                  <label htmlFor="caption" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--panel-muted)' }}>
-                    Epígrafe / Pie de foto:
-                  </label>
-                  <input
-                    id="caption"
-                    type="text"
-                    placeholder="Descripción o créditos de la foto..."
-                    value={formData.caption}
-                    onChange={e => handleChange('caption', e.target.value)}
-                    className="settings-input-sm"
-                  />
                 </div>
               </div>
             ) : (

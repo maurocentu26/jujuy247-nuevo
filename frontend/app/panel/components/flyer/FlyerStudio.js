@@ -27,7 +27,7 @@ function draftKey(id) {
 }
 
 function defaultsFor(article) {
-  const section = article.category?.name || '';
+  const section = (article.category?.name || '').trim();
   return {
     title: article.title || '',
     section,

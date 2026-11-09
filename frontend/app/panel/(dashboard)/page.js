@@ -216,9 +216,7 @@ export default function PanelArticlesPage() {
                     <span className="mesa-row-main">
                       <span className="mesa-row-title">{article.title}</span>
                       <span className="mesa-row-meta">
-                        <span>{article.category?.name || 'Sin sección'}</span>
-                        {article.front_page && article.status === 'published' && <span className="mesa-row-front">En portada</span>}
-                      </span>
+                        <span>{article.category?.name || 'Sin sección'}</span>                      </span>
                     </span>
                     <span className="mesa-row-side">
                       <span className={`mesa-status mesa-status-${article.status}`}>{statusLabel(article.status)}</span>

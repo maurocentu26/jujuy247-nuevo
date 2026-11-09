@@ -147,6 +147,13 @@ export async function POST(request) {
       );
     }
 
+    if (!Number.isInteger(Number(category)) || Number(category) <= 0) {
+      return NextResponse.json(
+        { error: 'Elegí la sección de la noticia' },
+        { status: 400 }
+      );
+    }
+
     const baseSlug = customSlug && customSlug.trim() ? slugify(customSlug) : slugify(title);
     const finalSlug = baseSlug ? `${baseSlug}-${Date.now().toString().slice(-4)}` : `nota-${Date.now()}`;
 
@@ -155,7 +162,7 @@ export async function POST(request) {
       slug: finalSlug,
       excerpt: typeof excerpt === 'string' ? excerpt.trim() : '',
       content: typeof content === 'string' ? content : '',
-      category: category ? Number(category) : 1,
+      category: Number(category),
       status: ['published', 'draft', 'archived'].includes(status) ? status : 'draft',
       front_page: Boolean(front_page),
       cover_image: cover_image || null,
