@@ -280,3 +280,15 @@
   .studio-fields[data-tab="foto"] [data-group="foto"],
   .studio-fields[data-tab="etiquetas"] [data-group="etiquetas"] { display: flex; }
 }
+
+/* Imagen y galería en el cuerpo, fecha de publicación */
+label.smart-tool-btn { cursor: pointer; }
+label.smart-tool-btn:has(input:focus-visible) { outline: 2px solid var(--panel-red); outline-offset: 2px; }
+.smart-tool-btn.is-disabled { opacity: .5; cursor: progress; }
+.toolbar-upload-status { color: var(--panel-red); font-weight: 600; }
+.settings-date-actions { display: flex; gap: 14px; margin-top: 6px; }
+.settings-link-btn { background: none; border: 0; padding: 4px 0; font-size: 13px; font-weight: 600; color: var(--panel-red); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.settings-link-btn:hover { color: var(--panel-ink); }
+.confirm-date-line { font-size: 14px; }
+.editor-page input[type="datetime-local"] { color-scheme: light; }
+.panel-body-wrapper[data-theme="dark"] .editor-page input[type="datetime-local"] { color-scheme: dark; }

@@ -21,6 +21,7 @@ export function serializeJsonLd(value) {
 
 export function articleDescription(article) {
   const text = String(article.seo_description || article.excerpt || article.content || '')
+    .replace(/```[\s\S]*?(```|$)/g, '')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]*>/g, '')

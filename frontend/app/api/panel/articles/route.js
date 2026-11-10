@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getDirectusUrl, getValidToken } from '../../../../lib/panel-auth';
 import { editorialViewFilter } from '../../../../lib/panel-views.mjs';
+import { validatePublishedAtInput } from '../../../../lib/datetime';
 
 function slugify(text) {
   return String(text || '')
@@ -154,7 +155,12 @@ export async function POST(request) {
       );
     }
 
-    const baseSlug = customSlug && customSlug.trim() ? slugify(customSlug) : slugify(title);
+    const publishedAt = validatePublishedAtInput(payload?.published_at);
+    if (publishedAt.error) {
+      return NextResponse.json({ error: publishedAt.error }, { status: 400 });
+    }
+
+    const baseSlug =customSlug && customSlug.trim() ? slugify(customSlug) : slugify(title);
     const finalSlug = baseSlug ? `${baseSlug}-${Date.now().toString().slice(-4)}` : `nota-${Date.now()}`;
 
     const articleData = {
@@ -169,7 +175,8 @@ export async function POST(request) {
       youtube_url: typeof youtube_url === 'string' ? youtube_url.trim() : null,
       seo_title: typeof seo_title === 'string' ? seo_title.trim() : null,
       seo_description: typeof seo_description === 'string' ? seo_description.trim() : null,
-      published_at: status === 'published' ? new Date().toISOString() : null,
+      // Un borrador puede guardar la fecha elegida; al publicar sin fecha se usa la actual.
+      published_at: publishedAt.value || (status === 'published' ? new Date().toISOString() : null),
     };
 
     const directusUrl = getDirectusUrl('/items/articles');

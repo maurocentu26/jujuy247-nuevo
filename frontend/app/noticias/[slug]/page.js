@@ -16,6 +16,7 @@ import { articleDescription, breadcrumbs, categoryUrl, serializeJsonLd } from '.
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CurrentArticleTitle from '../../components/CurrentArticleTitle';
+import GalleryAwarePre from '../../components/GalleryAwarePre';
 
 export const dynamic = 'force-dynamic';
 
@@ -266,13 +267,14 @@ export default async function ArticlePage({ params }) {
                   {children}
                 </a>
               ),
-              img: ({ ...props }) => {
+              pre: GalleryAwarePre,
+              img: ({ node, ...props }) => {
                 const credit = typeof props.title === 'string' ? props.title.trim() : '';
                 return (
                   <span style={{ display: 'block', margin: '14px 0' }}>
                     <img
                       {...props}
-                      alt={props.alt || ''}
+                      alt={props.alt || credit}
                       loading="lazy"
                       decoding="async"
                       style={{ maxWidth: '100%', height: 'auto', borderRadius: 12, display: 'block' }}

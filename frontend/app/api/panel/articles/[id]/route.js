@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getDirectusUrl, getValidToken } from '../../../../../lib/panel-auth';
+import { validatePublishedAtInput } from '../../../../../lib/datetime';
 
 export async function GET(request, { params }) {
   const cookieStore = await cookies();
@@ -75,9 +76,15 @@ export async function PATCH(request, { params }) {
     if (payload.seo_title !== undefined) updateData.seo_title = payload.seo_title ? String(payload.seo_title).trim() : null;
     if (payload.seo_description !== undefined) updateData.seo_description = payload.seo_description ? String(payload.seo_description).trim() : null;
 
+    const publishedAt = validatePublishedAtInput(payload.published_at);
+    if (publishedAt.error) {
+      return NextResponse.json({ error: publishedAt.error }, { status: 400 });
+    }
+    if (publishedAt.value) updateData.published_at = publishedAt.value;
+
     if (payload.status !== undefined) {
       updateData.status = payload.status;
-      if (payload.status === 'published' && !payload.published_at) {
+      if (payload.status === 'published' && !publishedAt.value) {
         updateData.published_at = new Date().toISOString();
       }
     }

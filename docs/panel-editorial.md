@@ -134,3 +134,17 @@ Esta sección reemplaza lo descripto arriba sobre barra lateral, encabezado, pes
 * **Fotos:** `GET /api/panel/flyer-image?id=` exige sesión, entrega la imagen en el mismo origen y fija el tamaño en el servidor para no superar el límite de respuesta de Vercel.
 * **Marca:** `public/logo3-white.png` es el logo oficial `logo-main3(fix-size white-text).png`. `public/isotipo.png` e `isotipo-white.png` son recortes de los logos oficiales.
 * **Exportación:** PNG o WebP, y copia al portapapeles solo en PNG. WebP se deshabilita si el navegador no lo genera.
+
+## 7. Fecha, imágenes y galerías en la noticia (noviembre de 2026)
+
+* **Fecha de publicación:** en Ajustes del editor, en hora de Argentina (`datetime-local`). Se guarda en UTC en `published_at`. Si una nota sin publicar no tiene fecha, al publicarla se usa la del momento. Una nota publicada conserva la suya salvo que se cambie. No se aceptan fechas futuras, ni en el editor ni en la API (`validatePublishedAtInput` en `lib/datetime.js`): el diario no programa notas y las mostraría de inmediato.
+* **Imagen en el cuerpo:** el botón «Imagen» sube el archivo con `/api/panel/upload` e inserta `![](URL "Epígrafe")` donde está el cursor. El título de la imagen es el epígrafe que ve el lector.
+* **Galería:** el botón «Galería» sube varias fotos e inserta un bloque en el mismo Markdown, sin campos nuevos en Directus:
+
+  ````
+  ```galeria
+  ![Epígrafe de la foto](https://…/assets/ID)
+  ```
+  ````
+
+  `GalleryAwarePre` lo reconoce en el diario y en las vistas previas del panel, y `ArticleGallery` muestra la grilla y el visor a pantalla completa, que se usa con flechas, teclado y deslizando en el celular. Las miniaturas se piden achicadas a Directus (`?width=`). Formato y lectura en `lib/article-gallery.mjs`.

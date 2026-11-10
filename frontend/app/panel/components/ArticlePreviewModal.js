@@ -4,6 +4,19 @@ import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { FiX, FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
+import GalleryAwarePre from '../../components/GalleryAwarePre';
+import { formatPublishedAt } from '../../../lib/datetime';
+
+// Como en el diario: el epígrafe (título de la imagen) se ve debajo de la foto.
+const PREVIEW_COMPONENTS = {
+  pre: GalleryAwarePre,
+  img: ({ node, title, alt, ...props }) => (
+    <span style={{ display: 'block', margin: '14px 0' }}>
+      <img {...props} alt={alt || title || ''} style={{ maxWidth: '100%', height: 'auto', borderRadius: 12, display: 'block' }} />
+      {title ? <span style={{ display: 'block', marginTop: 6, fontSize: 12, color: '#6b7280' }}>{title}</span> : null}
+    </span>
+  ),
+};
 
 function parseYoutubeId(url) {
   if (!url || typeof url !== 'string') return null;
@@ -26,10 +39,11 @@ function parseYoutubeId(url) {
   }
 }
 
-export default function ArticlePreviewModal({ article, categoryName, coverUrl, onClose }) {
+export default function ArticlePreviewModal({ article, categoryName, coverUrl, publishedAt, onClose }) {
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.key === 'Escape') onClose();
+      // Con el visor de una galería abierto, Escape cierra solo el visor.
+      if (e.key === 'Escape' && !document.querySelector('dialog[open]')) onClose();
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -105,7 +119,7 @@ export default function ArticlePreviewModal({ article, categoryName, coverUrl, o
           }}>
             <strong style={{ color: '#111827' }}>Redacción Jujuy247</strong>
             <span>•</span>
-            <span>{new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <span>{publishedAt ? formatPublishedAt(publishedAt) : 'Fecha al publicar'}</span>
           </div>
 
           {coverUrl && (
@@ -125,7 +139,7 @@ export default function ArticlePreviewModal({ article, categoryName, coverUrl, o
 
           <div className="article-reading" style={{ fontSize: '18px', lineHeight: '1.7', color: '#1f2937' }}>
             {article.content ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={PREVIEW_COMPONENTS}>
                 {article.content}
               </ReactMarkdown>
             ) : (

@@ -27,8 +27,12 @@ import {
   FiRotateCw,
   FiHelpCircle,
   FiX,
+  FiGrid,
 } from 'react-icons/fi';
 import ArticlePreviewModal from './ArticlePreviewModal';
+import GalleryAwarePre from '../../components/GalleryAwarePre';
+import { galleryBlock } from '../../../lib/article-gallery.mjs';
+import { formatPublishedAt, fromArgentinaInputValue, toArgentinaInputValue } from '../../../lib/datetime';
 import ThemeToggle from './ThemeToggle';
 
 const CONFIRM_COPY = {
@@ -39,7 +43,7 @@ const CONFIRM_COPY = {
   },
   update: {
     title: '¿Actualizar la noticia publicada?',
-    body: 'Los cambios se ven de inmediato en el diario. La fecha de publicación no cambia.',
+    body: 'Los cambios se ven de inmediato en el diario.',
     action: 'Actualizar',
   },
   unpublish: {
@@ -109,6 +113,8 @@ export default function ArticleEditor({ initialArticle = null }) {
     youtube_url: initialArticle?.youtube_url || '',
     front_page: Boolean(initialArticle?.front_page),
     status: initialArticle?.status || 'draft',
+    // Hora de Argentina para el datetime-local. Vacío en una nota sin publicar: se usa el momento de publicar.
+    published_at: toArgentinaInputValue(initialArticle?.published_at),
     seo_title: initialArticle?.seo_title || '',
     seo_description: initialArticle?.seo_description || '',
   });
@@ -120,6 +126,7 @@ export default function ArticleEditor({ initialArticle = null }) {
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [bodyUpload, setBodyUpload] = useState('');
   const [toast, setToast] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -339,15 +346,101 @@ export default function ArticleEditor({ initialArticle = null }) {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [formData]);
 
-  // Image upload
-  async function handleImageFile(file) {
-    if (!file) return;
+  function imageFileError(file) {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      setErrorMsg('Elegí una imagen en formato JPG, PNG o WebP.');
-      return;
+      return `«${file.name}» no es una imagen JPG, PNG o WebP.`;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('La imagen no debe superar los 10 MB.');
+      return `«${file.name}» supera los 10 MB.`;
+    }
+    return '';
+  }
+
+  async function uploadImage(file) {
+    const data = new FormData();
+    data.append('file', file);
+    const res = await fetch('/api/panel/upload', { method: 'POST', body: data });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.fileId) {
+      throw new Error(json.error || 'Error al subir la imagen');
+    }
+    // La URL pública se arma acá: la del servidor puede ser la interna de Directus.
+    return { fileId: json.fileId, url: `${directusBase}/assets/${json.fileId}` };
+  }
+
+  // Inserta texto en el cursor del cuerpo, como bloque separado, y selecciona `select` dentro de él.
+  function insertBlockAtCursor(block, select = '') {
+    const el = contentRef.current;
+    // Después de una subida, el valor del textarea está más al día que el estado capturado.
+    const text = el ? el.value : formData.content;
+    const start = el ? el.selectionStart : text.length;
+    const end = el ? el.selectionEnd : text.length;
+    const before = text.slice(0, start);
+    const after = text.slice(end);
+    const NL = '\n';
+    const lead = before && !before.endsWith(NL + NL) ? (before.endsWith(NL) ? NL : NL + NL) : '';
+    const trail = after.startsWith(NL + NL) ? '' : after.startsWith(NL) ? NL : NL + NL;
+    const newContent = before + lead + block + trail + after;
+    handleChange('content', newContent);
+    recordHistory(newContent);
+
+    const blockStart = before.length + lead.length;
+    const selOffset = select ? block.indexOf(select) : -1;
+    setTimeout(() => {
+      if (!el) return;
+      el.focus();
+      if (selOffset >= 0) el.setSelectionRange(blockStart + selOffset, blockStart + selOffset + select.length);
+      else el.setSelectionRange(blockStart + block.length, blockStart + block.length);
+    }, 10);
+  }
+
+  async function handleBodyImage(file) {
+    if (!file) return;
+    const problem = imageFileError(file);
+    if (problem) { setErrorMsg(problem); return; }
+    setErrorMsg('');
+    setBodyUpload('Subiendo imagen…');
+    try {
+      const { url } = await uploadImage(file);
+      insertBlockAtCursor(`![](${url} "Epígrafe")`, 'Epígrafe');
+      showToast('Imagen agregada. Escribí el epígrafe o borralo.');
+    } catch (err) {
+      setErrorMsg(err.message || 'Error al subir la imagen');
+    } finally {
+      setBodyUpload('');
+    }
+  }
+
+  async function handleGalleryFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    const problem = files.map(imageFileError).find(Boolean);
+    if (problem) { setErrorMsg(problem); return; }
+    setErrorMsg('');
+    const images = [];
+    try {
+      for (const [i, file] of files.entries()) {
+        setBodyUpload(`Subiendo foto ${i + 1} de ${files.length}…`);
+        const { url } = await uploadImage(file);
+        images.push({ src: url, caption: '' });
+      }
+    } catch (err) {
+      setErrorMsg(`${err.message || 'Error al subir la imagen'}. ${images.length ? `Se agregaron las ${images.length} fotos que alcanzaron a subir.` : ''}`.trim());
+    } finally {
+      setBodyUpload('');
+    }
+    if (images.length) {
+      insertBlockAtCursor(galleryBlock(images));
+      showToast(`Galería de ${images.length} ${images.length === 1 ? 'foto' : 'fotos'} agregada. Podés escribir cada epígrafe entre los corchetes.`);
+    }
+  }
+
+  // Foto principal
+  async function handleImageFile(file) {
+    if (!file) return;
+    const problem = imageFileError(file);
+    if (problem) {
+      setErrorMsg(problem);
       return;
     }
 
@@ -355,23 +448,11 @@ export default function ArticleEditor({ initialArticle = null }) {
     setErrorMsg('');
 
     try {
-      const data = new FormData();
-      data.append('file', file);
-
-      const res = await fetch('/api/panel/upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      const json = await res.json();
-      if (!res.ok || !json.fileId) {
-        throw new Error(json.error || 'Error al subir la imagen');
-      }
-
+      const { fileId, url } = await uploadImage(file);
       setFormData(prev => ({
         ...prev,
-        cover_image: json.fileId,
-        cover_url: json.url,
+        cover_image: fileId,
+        cover_url: url,
       }));
       setIsDirty(true);
       showToast('Imagen subida correctamente');
@@ -400,6 +481,20 @@ export default function ArticleEditor({ initialArticle = null }) {
       return;
     }
 
+    const publishedAtIso = fromArgentinaInputValue(formData.published_at);
+    if (formData.published_at && !publishedAtIso) {
+      setErrorMsg('La fecha de publicación no es válida.');
+      setConfirmAction(null);
+      setMobileTab('settings');
+      return;
+    }
+    if (publishedAtIso && new Date(publishedAtIso).getTime() > Date.now() + 60 * 1000) {
+      setErrorMsg('La fecha de publicación no puede ser futura: el diario no programa notas.');
+      setConfirmAction(null);
+      setMobileTab('settings');
+      return;
+    }
+
     setIsSaving(true);
     setErrorMsg('');
 
@@ -414,7 +509,8 @@ export default function ArticleEditor({ initialArticle = null }) {
         youtube_url: formData.youtube_url.trim() || null,
         front_page: formData.front_page,
         status: targetStatus,
-        published_at: initialArticle?.published_at || undefined,
+        // Sin fecha elegida, una nota publicada conserva la suya y una nueva toma la del momento.
+        published_at: publishedAtIso || initialArticle?.published_at || undefined,
         seo_title: formData.seo_title.trim() || null,
         seo_description: formData.seo_description.trim() || null,
       };
@@ -436,7 +532,11 @@ export default function ArticleEditor({ initialArticle = null }) {
       }
 
       setIsDirty(false);
-      setFormData(prev => ({ ...prev, status: targetStatus }));
+      setFormData(prev => ({
+        ...prev,
+        status: targetStatus,
+        published_at: toArgentinaInputValue(json.data?.published_at) || prev.published_at,
+      }));
       setConfirmAction(null);
 
       const savedId = initialArticle?.id || json.data?.id;
@@ -465,6 +565,11 @@ export default function ArticleEditor({ initialArticle = null }) {
   const wordCount = formData.content.trim() ? formData.content.trim().split(/\s+/).length : 0;
   const readTimeMin = Math.max(1, Math.ceil(wordCount / 200));
   const youtubeValid = formData.youtube_url ? parseYoutubeId(formData.youtube_url) !== null : true;
+  const publishedAtIsoPreview = fromArgentinaInputValue(formData.published_at);
+  const publishedAtInFuture = Boolean(publishedAtIsoPreview) && new Date(publishedAtIsoPreview).getTime() > Date.now() + 60 * 1000;
+  const confirmDateLabel = publishedAtIsoPreview
+    ? formatPublishedAt(publishedAtIsoPreview)
+    : confirmAction === 'publish' ? 'ahora, al publicar' : '';
 
   return (
     <>
@@ -497,7 +602,7 @@ export default function ArticleEditor({ initialArticle = null }) {
           <button
             type="button"
             className="btn-primary"
-            disabled={isSaving || !formData.title.trim() || !formData.content.trim() || !youtubeValid}
+            disabled={isSaving || !formData.title.trim() || !formData.content.trim() || !youtubeValid || publishedAtInFuture}
             onClick={() => setConfirmAction(isPublished ? 'update' : 'publish')}
             aria-keyshortcuts="Control+Enter"
           >
@@ -669,6 +774,37 @@ export default function ArticleEditor({ initialArticle = null }) {
                     <span className="tool-label">Enlace</span>
                   </button>
 
+                  <label
+                    className={`smart-tool-btn ${bodyUpload ? 'is-disabled' : ''}`}
+                    title="Insertar una imagen donde está el cursor"
+                  >
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="visually-hidden"
+                      disabled={Boolean(bodyUpload)}
+                      onChange={e => { handleBodyImage(e.target.files?.[0]); e.target.value = ''; }}
+                    />
+                    <FiImage size={15} aria-hidden="true" />
+                    <span className="tool-label">Imagen</span>
+                  </label>
+
+                  <label
+                    className={`smart-tool-btn ${bodyUpload ? 'is-disabled' : ''}`}
+                    title="Insertar una galería de fotos donde está el cursor (podés elegir varias)"
+                  >
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      className="visually-hidden"
+                      disabled={Boolean(bodyUpload)}
+                      onChange={e => { handleGalleryFiles(e.target.files); e.target.value = ''; }}
+                    />
+                    <FiGrid size={15} aria-hidden="true" />
+                    <span className="tool-label">Galería</span>
+                  </label>
+
                   <button
                     type="button"
                     className="smart-tool-btn"
@@ -702,11 +838,17 @@ export default function ArticleEditor({ initialArticle = null }) {
                   </button>
                 </div>
 
-                <div className="toolbar-editorial-metrics">
-                  <FiClock size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                  <span>{wordCount} palabras</span>
-                  <span>•</span>
-                  <span>~{readTimeMin} min lectura</span>
+                <div className="toolbar-editorial-metrics" role="status">
+                  {bodyUpload ? (
+                    <span className="toolbar-upload-status">{bodyUpload}</span>
+                  ) : (
+                    <>
+                      <FiClock size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                      <span>{wordCount} palabras</span>
+                      <span>•</span>
+                      <span>~{readTimeMin} min lectura</span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -727,7 +869,7 @@ export default function ArticleEditor({ initialArticle = null }) {
                     <div className="split-preview-header">Vista previa en vivo</div>
                     <div className="article-reading" style={{ fontSize: '16px', lineHeight: '1.6' }}>
                       {formData.content ? (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ pre: GalleryAwarePre }}>
                           {formData.content}
                         </ReactMarkdown>
                       ) : (
@@ -782,6 +924,38 @@ export default function ArticleEditor({ initialArticle = null }) {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Fecha de publicación */}
+          <div className="settings-panel-box">
+            <h3 className="settings-box-title"><label htmlFor="article-published-at">Fecha de publicación</label></h3>
+            <input
+              id="article-published-at"
+              type="datetime-local"
+              className={`settings-input ${publishedAtInFuture ? 'input-error' : ''}`}
+              value={formData.published_at}
+              max={toArgentinaInputValue(new Date())}
+              suppressHydrationWarning
+              onChange={e => handleChange('published_at', e.target.value)}
+              aria-describedby="article-published-at-hint"
+            />
+            <div className="settings-date-actions">
+              <button type="button" className="settings-link-btn" onClick={() => handleChange('published_at', toArgentinaInputValue(new Date()))}>
+                Usar fecha y hora actual
+              </button>
+              {!isPublished && formData.published_at && (
+                <button type="button" className="settings-link-btn" onClick={() => handleChange('published_at', '')}>
+                  Vaciar
+                </button>
+              )}
+            </div>
+            <p id="article-published-at-hint" className={publishedAtInFuture ? 'field-hint-error' : 'field-hint'}>
+              {publishedAtInFuture
+                ? 'No puede ser futura: el diario no programa notas.'
+                : formData.published_at
+                  ? 'Hora de Argentina. Es la fecha que ve el lector y ordena la nota en el diario.'
+                  : 'Si la dejás vacía, se usa el momento en que publiques.'}
+            </p>
           </div>
 
           {/* Front page switch */}
@@ -921,6 +1095,7 @@ export default function ArticleEditor({ initialArticle = null }) {
           article={formData}
           categoryName={selectedCategory?.name || 'Las noticias'}
           coverUrl={formData.cover_url}
+          publishedAt={publishedAtIsoPreview}
           onClose={() => setShowPreview(false)}
         />
       )}
@@ -932,6 +1107,9 @@ export default function ArticleEditor({ initialArticle = null }) {
             <h3 id="confirm-title">{CONFIRM_COPY[confirmAction].title}</h3>
             <p>{CONFIRM_COPY[confirmAction].body}</p>
             <p className="mesa-modal-quote">{formData.title}</p>
+            {confirmAction !== 'unpublish' && confirmDateLabel && (
+              <p className="confirm-date-line">Fecha de publicación: <strong>{confirmDateLabel}</strong></p>
+            )}
             <div className="modal-actions">
               <button type="button" className="btn-secondary" disabled={isSaving} onClick={() => setConfirmAction(null)}>
                 Seguir revisando

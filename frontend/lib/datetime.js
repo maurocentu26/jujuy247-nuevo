@@ -28,6 +28,47 @@ export function formatPublishedAt(value, locale = 'es-AR') {
   }).format(parsed);
 }
 
+// Valor para <input type="datetime-local">, en hora de Argentina ("2026-11-10T14:30").
+export function toArgentinaInputValue(value) {
+  const parsed = value instanceof Date ? value : parsePublishedAt(value);
+  if (!parsed || !Number.isFinite(parsed.getTime())) return '';
+
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: ARGENTINA_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(parsed).map(p => [p.type, p.value])
+  );
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
+// Interpreta el valor de un datetime-local como hora de Argentina (UTC-3, sin horario de verano).
+export function fromArgentinaInputValue(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
+  const parsed = new Date(`${value}:00-03:00`);
+  return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
+}
+
+// Fecha de publicación que llega del panel. No se programan notas: se rechaza una fecha futura
+// (con un margen por relojes desfasados), porque el diario la mostraría igual desde ya.
+export function validatePublishedAtInput(value, nowMs = Date.now()) {
+  if (value === undefined) return { value: undefined };
+  if (value === null || value === '') return { value: null };
+  const parsed = typeof value === 'string' ? new Date(value) : null;
+  if (!parsed || !Number.isFinite(parsed.getTime())) {
+    return { error: 'La fecha de publicación no es válida.' };
+  }
+  if (parsed.getTime() > nowMs + 5 * 60 * 1000) {
+    return { error: 'La fecha de publicación no puede ser futura.' };
+  }
+  return { value: parsed.toISOString() };
+}
+
 export function formatRelativePublishedAt(value, nowMs = Date.now()) {
   const parsed = parsePublishedAt(value);
   if (!parsed) return 'Ahora';
