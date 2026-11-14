@@ -89,3 +89,12 @@ test('file names are safe and identify the format', () => {
   assert.equal(flyerFileName('La Renga: homenaje ñandú', 'png'), 'jujuy247-la-renga-homenaje-nandu-4x5.png');
   assert.equal(flyerFileName('', 'webp'), 'jujuy247-noticia-4x5.webp');
 });
+
+test('flyer photos default to color and old drafts do not stay in black and white', async () => {
+  const { DEFAULT_FILTER, PHOTO_FILTERS, normalizeFilter } = await import('../lib/flyer/filters.mjs');
+  assert.equal(DEFAULT_FILTER, 'color');
+  assert.equal(PHOTO_FILTERS[0].id, 'color');
+  assert.equal(normalizeFilter(undefined), 'color');
+  assert.equal(normalizeFilter('bw'), 'bw');
+  assert.equal(normalizeFilter('instagram'), 'color');
+});

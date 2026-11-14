@@ -16,15 +16,46 @@ function skewedRect(ctx, x, y, width, height, degrees) {
   ctx.fill();
 }
 
-function drawPhoto(ctx, photo, crop, gray) {
+function blend(ctx, operation, alpha, paint) {
+  ctx.save();
+  ctx.globalCompositeOperation = operation;
+  ctx.globalAlpha = alpha;
+  paint();
+  ctx.restore();
+}
+
+function fillAll(ctx, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, FLYER.width, FLYER.height);
+}
+
+// Safari no aplica ctx.filter: los filtros se arman con modos de fusión, que funcionan en todos.
+// Se dibuja en coordenadas del flyer; para una miniatura alcanza con escalar el contexto antes.
+export function drawPhoto(ctx, photo, crop, filter = 'color') {
   const rect = coverRect(photo.naturalWidth, photo.naturalHeight, crop);
-  ctx.drawImage(photo, rect.x, rect.y, rect.width, rect.height);
-  if (gray) {
-    // Safari no aplica ctx.filter: la composición en saturación funciona en todos.
-    ctx.globalCompositeOperation = 'saturation';
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, FLYER.width, FLYER.height);
-    ctx.globalCompositeOperation = 'source-over';
+  const drawSource = () => ctx.drawImage(photo, rect.x, rect.y, rect.width, rect.height);
+  drawSource();
+
+  switch (filter) {
+    case 'vivid':
+      // La foto sobre sí misma en superposición sube contraste y saturación.
+      blend(ctx, 'overlay', 0.45, drawSource);
+      break;
+    case 'warm':
+      blend(ctx, 'soft-light', 0.4, () => fillAll(ctx, '#ff8a2a'));
+      break;
+    case 'cool':
+      blend(ctx, 'soft-light', 0.38, () => fillAll(ctx, '#2f7bff'));
+      break;
+    case 'bw':
+      blend(ctx, 'saturation', 1, () => fillAll(ctx, '#000'));
+      break;
+    case 'sepia':
+      blend(ctx, 'saturation', 1, () => fillAll(ctx, '#000'));
+      blend(ctx, 'color', 0.55, () => fillAll(ctx, '#a8763e'));
+      break;
+    default:
+      break;
   }
 }
 
@@ -123,12 +154,12 @@ function drawSiteUrl(ctx, family) {
 }
 
 // Única función de dibujo: la vista previa y el archivo exportado son el mismo lienzo.
-export function renderFlyer(ctx, { section, pill, gray, crop, layout }, { photo, logo, family }) {
+export function renderFlyer(ctx, { section, pill, filter, crop, layout }, { photo, logo, family }) {
   ctx.clearRect(0, 0, FLYER.width, FLYER.height);
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, FLYER.width, FLYER.height);
 
-  if (photo) drawPhoto(ctx, photo, crop, gray);
+  if (photo) drawPhoto(ctx, photo, crop, filter);
   drawFades(ctx, layout);
   if (logo) {
     ctx.drawImage(logo, LOGO.x, LOGO.y, LOGO.width, LOGO.width * (logo.naturalHeight / logo.naturalWidth));

@@ -133,6 +133,7 @@ Esta sección reemplaza lo descripto arriba sobre barra lateral, encabezado, pes
 * **Datos:** el flyer se arma con la noticia, pero editarlo no la modifica. Los ajustes quedan por noticia en `localStorage` (`flyer-draft:v1:ID`); una foto reemplazada no se sube a Directus ni se conserva al recargar.
 * **Fotos:** `GET /api/panel/flyer-image?id=` exige sesión, entrega la imagen en el mismo origen y fija el tamaño en el servidor para no superar el límite de respuesta de Vercel.
 * **Marca:** `public/logo3-white.png` es el logo oficial `logo-main3(fix-size white-text).png`. `public/isotipo.png` e `isotipo-white.png` son recortes de los logos oficiales.
+* **Filtros:** la foto sale a color por defecto. El selector ofrece Color, Vívido, Cálido, Frío, Blanco y negro y Sepia, con una miniatura de cada uno (`lib/flyer/filters.mjs`; `drawPhoto` en `render.js`). Se arman con modos de fusión del canvas porque Safari no aplica `ctx.filter`. Los borradores guardados antes con `gray: true` vuelven a color, porque ese valor era el predeterminado y no una elección.
 * **Exportación:** PNG o WebP, y copia al portapapeles solo en PNG. WebP se deshabilita si el navegador no lo genera.
 
 ## 7. Fecha, imágenes y galerías en la noticia (noviembre de 2026)

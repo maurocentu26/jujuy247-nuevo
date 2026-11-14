@@ -15,6 +15,8 @@ import {
   TITLE_SUGGESTED,
 } from '../../../../lib/flyer/layout.mjs';
 import { renderFlyer } from '../../../../lib/flyer/render.js';
+import { DEFAULT_FILTER, normalizeFilter } from '../../../../lib/flyer/filters.mjs';
+import FilterPicker from './FilterPicker';
 
 const FONT_WEIGHTS = [400, 500, 600, 800];
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
@@ -34,7 +36,7 @@ function defaultsFor(article) {
     pill: section,
     excerpt: article.excerpt || '',
     showExcerpt: false,
-    gray: true,
+    filter: DEFAULT_FILTER,
     crop: { zoom: 1, x: 0, y: 0 },
   };
 }
@@ -43,7 +45,9 @@ function readDraft(article) {
   const base = defaultsFor(article);
   try {
     const saved = JSON.parse(localStorage.getItem(draftKey(article.id)) || 'null');
-    return saved ? { ...base, ...saved, crop: { ...base.crop, ...saved.crop } } : base;
+    if (!saved) return base;
+    const { gray, ...rest } = saved;
+    return { ...base, ...rest, filter: normalizeFilter(saved.filter), crop: { ...base.crop, ...saved.crop } };
   } catch {
     return base;
   }
@@ -234,7 +238,7 @@ export default function FlyerStudio({ initialId, family }) {
       renderFlyer(canvas.getContext('2d'), {
         section: fields.section,
         pill: fields.pill,
-        gray: fields.gray,
+        filter: fields.filter,
         crop: fields.crop,
         layout,
       }, { photo, logo, family });
@@ -556,10 +560,7 @@ export default function FlyerStudio({ initialId, family }) {
                 {uploadUrl && articleCover && (
                   <button type="button" className="studio-link-button" onClick={() => { clearUpload(); updateCrop({ zoom: 1, x: 0, y: 0 }); }}>Usar la foto de la noticia</button>
                 )}
-                <label className="studio-check is-between">
-                  Blanco y negro
-                  <input type="checkbox" checked={fields.gray} onChange={event => update({ gray: event.target.checked })} />
-                </label>
+                <FilterPicker value={fields.filter} onChange={filter => update({ filter })} photo={photo} crop={fields.crop} />
                 <small>Los cambios quedan en el flyer. La noticia no se modifica.</small>
                 <button type="button" className="studio-link-button" onClick={() => { clearUpload(); setFields(defaultsFor(article)); setNote(null); }}>Restablecer el flyer</button>
               </div>
