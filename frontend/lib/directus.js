@@ -197,7 +197,33 @@ async function fetchJson(url) {
   return res.json();
 }
 
-export async function getLatestArticles({ limit = 20, offset = 0, categorySlug } = {}) {
+// File metadata lets the article page frame photos without cropping faces.
+export const COVER_IMAGE_META_FIELDS = [
+  'cover_image.id',
+  'cover_image.width',
+  'cover_image.height',
+  'cover_image.focal_point_x',
+  'cover_image.focal_point_y',
+];
+
+function withCoverMeta(fields) {
+  return fields.flatMap((field) => (field === 'cover_image' ? COVER_IMAGE_META_FIELDS : [field]));
+}
+
+async function fetchItems(buildUrl, fields, imageMeta) {
+  if (imageMeta) {
+    try {
+      const json = await fetchJson(buildUrl(withCoverMeta(fields).join(',')));
+      return json.data ?? [];
+    } catch {
+      // Older schemas or restricted file permissions: fall back to the bare id.
+    }
+  }
+  const json = await fetchJson(buildUrl(fields.join(',')));
+  return json.data ?? [];
+}
+
+export async function getLatestArticles({ limit = 20, offset = 0, categorySlug, imageMeta = false } = {}) {
   const fields = [
     'id',
     'title',
@@ -216,7 +242,7 @@ export async function getLatestArticles({ limit = 20, offset = 0, categorySlug }
     'category.id',
     'category.name',
     'category.slug',
-  ].join(',');
+  ];
 
   const filterObject = {
     status: { _eq: 'published' },
@@ -226,12 +252,13 @@ export async function getLatestArticles({ limit = 20, offset = 0, categorySlug }
   }
   const filter = encodeURIComponent(JSON.stringify(filterObject));
 
-  const url = directusUrl(
-    `/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at,-id&limit=${limit}&offset=${Math.max(0, offset)}&filter=${filter}`
+  return fetchItems(
+    (fieldList) => directusUrl(
+      `/items/articles?fields=${encodeURIComponent(fieldList)}&sort=-published_at,-id&limit=${limit}&offset=${Math.max(0, offset)}&filter=${filter}`
+    ),
+    fields,
+    imageMeta
   );
-
-  const json = await fetchJson(url);
-  return json.data ?? [];
 }
 
 export async function getFrontPageArticle() {
@@ -307,7 +334,7 @@ export async function getFrontPageArticleInCategory({ categoryId } = {}) {
   return items[0] ?? null;
 }
 
-export async function getOtherArticlesInCategory({ categoryId, excludeId, limit = 3 } = {}) {
+export async function getOtherArticlesInCategory({ categoryId, excludeId, limit = 3, imageMeta = false } = {}) {
   const fields = [
     'id',
     'title',
@@ -320,7 +347,7 @@ export async function getOtherArticlesInCategory({ categoryId, excludeId, limit 
     'category.id',
     'category.name',
     'category.slug',
-  ].join(',');
+  ];
 
   const filterObject = {
     status: { _eq: 'published' },
@@ -329,9 +356,11 @@ export async function getOtherArticlesInCategory({ categoryId, excludeId, limit 
   if (categoryId) filterObject.category = { id: { _eq: categoryId } };
 
   const filter = encodeURIComponent(JSON.stringify(filterObject));
-  const url = directusUrl(`/items/articles?fields=${encodeURIComponent(fields)}&sort=-published_at&limit=${limit}&filter=${filter}`);
-  const json = await fetchJson(url);
-  return json.data ?? [];
+  return fetchItems(
+    (fieldList) => directusUrl(`/items/articles?fields=${encodeURIComponent(fieldList)}&sort=-published_at&limit=${limit}&filter=${filter}`),
+    fields,
+    imageMeta
+  );
 }
 
 export async function getArticleBySlug(slug) {
@@ -359,39 +388,34 @@ export async function getArticleBySlug(slug) {
     'tags.name',
   ];
 
-  const fieldsWithSourceAndVideo = [...baseFields, 'source_name', 'source_url', 'youtube_url'].join(',');
-  const fieldsWithSource = [...baseFields, 'source_name', 'source_url'].join(',');
-  const fieldsWithoutSource = baseFields.join(',');
+  const optional = ['source_name', 'source_url', 'youtube_url'];
+  // Most complete first; each fallback keeps compatibility with schemas that
+  // lack the optional fields or file metadata.
+  const attempts = [
+    withCoverMeta([...baseFields, ...optional]),
+    [...baseFields, ...optional],
+    [...baseFields, 'source_name', 'source_url'],
+    baseFields,
+  ];
 
   const filter = encodeURIComponent(JSON.stringify({
     slug: { _eq: slug },
     status: { _eq: 'published' },
   }));
 
-  const urlWithSourceAndVideo = directusUrl(
-    `/items/articles?fields=${encodeURIComponent(fieldsWithSourceAndVideo)}&limit=1&filter=${filter}`
-  );
-  const urlWithSource = directusUrl(`/items/articles?fields=${encodeURIComponent(fieldsWithSource)}&limit=1&filter=${filter}`);
-
-  try {
-    const json = await fetchJson(urlWithSourceAndVideo);
-    const items = json.data ?? [];
-    return items[0] ?? null;
-  } catch {
-    // Keep compatibility if optional fields are not yet present in Directus schema.
+  let lastError;
+  for (const fields of attempts) {
     try {
-      const json = await fetchJson(urlWithSource);
-      const items = json.data ?? [];
-      return items[0] ?? null;
-    } catch {
-      const urlWithoutSource = directusUrl(
-        `/items/articles?fields=${encodeURIComponent(fieldsWithoutSource)}&limit=1&filter=${filter}`
+      const json = await fetchJson(
+        directusUrl(`/items/articles?fields=${encodeURIComponent(fields.join(','))}&limit=1&filter=${filter}`)
       );
-      const json = await fetchJson(urlWithoutSource);
       const items = json.data ?? [];
       return items[0] ?? null;
+    } catch (error) {
+      lastError = error;
     }
   }
+  throw lastError;
 }
 
 export function getCanonicalUrlForArticle(article) {
