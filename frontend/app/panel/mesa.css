@@ -302,3 +302,34 @@ label.smart-tool-btn:has(input:focus-visible) { outline: 2px solid var(--panel-r
 .studio-filter:hover { background: var(--panel-surface-2); }
 .studio-filter.is-selected { border-color: var(--panel-red); color: var(--panel-ink); }
 .studio-filter:has(input:focus-visible) { outline: 2px solid var(--panel-red); outline-offset: 2px; }
+
+/* Banner de entorno staging */
+.staging-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding: 9px 18px;
+  background: var(--panel-warn-soft);
+  border-bottom: 1px solid var(--panel-warn-line);
+  color: var(--panel-ink);
+  font-size: 13px; line-height: 1.4;
+}
+.staging-banner-badge {
+  display: inline-flex; align-items: center; padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--panel-warn); color: var(--panel-surface);
+  font-family: var(--panel-font-title); font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+}
+.staging-banner-text { flex: 1 1 240px; }
+.staging-banner-text code {
+  padding: 1px 6px; border-radius: 4px;
+  background: var(--panel-surface); border: 1px solid var(--panel-warn-line);
+  font-size: 12px; font-weight: 600;
+}
+.staging-banner-pill {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--panel-surface); border: 1px solid var(--panel-warn-line);
+  color: var(--panel-warn); font-size: 12px; font-weight: 700;
+}
+@media (max-width: 860px) {
+  .staging-banner { padding: 8px 14px; }
+}

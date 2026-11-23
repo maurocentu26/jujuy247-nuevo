@@ -1,5 +1,6 @@
 import './panel.css';
 import './mesa.css';
+import StagingBanner from './components/StagingBanner';
 
 export const metadata = {
   title: 'Panel Editorial | Jujuy247',
@@ -13,6 +14,7 @@ export default function PanelRootLayout({ children }) {
   return (
     <div className="panel-body-wrapper" data-theme="light" suppressHydrationWarning>
       <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      <StagingBanner />
       {children}
     </div>
   );
