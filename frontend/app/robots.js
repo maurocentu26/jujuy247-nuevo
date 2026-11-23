@@ -1,6 +1,18 @@
 import { getSiteUrl } from '../lib/directus';
+import { shouldAllowIndexing } from '../lib/env.mjs';
 
 export default function robots() {
+  if (!shouldAllowIndexing()) {
+    return {
+      rules: [
+        {
+          userAgent: '*',
+          disallow: '/',
+        },
+      ],
+    };
+  }
+
   const siteUrl = getSiteUrl();
 
   return {

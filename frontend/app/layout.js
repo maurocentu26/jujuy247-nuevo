@@ -6,6 +6,7 @@ import SiteHeader from './components/SiteHeader';
 import Footer from './components/Footer';
 import SiteLayoutWrapper from './components/SiteLayoutWrapper';
 import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, serializeJsonLd } from '../lib/site';
+import { shouldAllowIndexing } from '../lib/env.mjs';
 
 const inter = Source_Sans_3({
   subsets: ['latin'],
@@ -22,7 +23,7 @@ export const metadata = {
   title: { default: 'Noticias de Jujuy | Jujuy247', template: '%s | Jujuy247' },
   description: SITE_DESCRIPTION,
   icons: { icon: '/favicon.png', shortcut: '/favicon.png', apple: '/apple-icon.png' },
-  robots: { index: true, follow: true, 'max-image-preview': 'large' },
+  robots: shouldAllowIndexing() ? { index: true, follow: true, 'max-image-preview': 'large' } : { index: false, follow: false },
   verification: { google: process.env.GOOGLE_SITE_VERIFICATION || undefined },
   openGraph: {
     title: 'Noticias de Jujuy | Jujuy247', description: SITE_DESCRIPTION,
