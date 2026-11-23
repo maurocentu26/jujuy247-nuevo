@@ -7,6 +7,7 @@ import { coverFrame } from '../../../lib/article-layout.mjs';
 export default function ArticleCover({ src, file, alt }) {
   if (!src) return null;
   const frame = coverFrame(file);
+  const needsBackdrop = !(frame.fillsDesktop && frame.fillsMobile);
   const width = Number(file?.width) || 1600;
   const height = Number(file?.height) || 900;
 
@@ -18,15 +19,17 @@ export default function ArticleCover({ src, file, alt }) {
       data-fills-mobile={frame.fillsMobile ? 'true' : 'false'}
       style={{ '--cover-ar-d': frame.desktopRatio, '--cover-ar-m': frame.mobileRatio }}
     >
-      <Image
-        src={src}
-        alt=""
-        aria-hidden="true"
-        width={64}
-        height={Math.max(1, Math.round((64 * height) / width))}
-        sizes="64px"
-        className="article-cover-backdrop"
-      />
+      {needsBackdrop ? (
+        <Image
+          src={src}
+          alt=""
+          aria-hidden="true"
+          width={64}
+          height={Math.max(1, Math.round((64 * height) / width))}
+          sizes="64px"
+          className="article-cover-backdrop"
+        />
+      ) : null}
       <Image
         src={src}
         alt={alt}

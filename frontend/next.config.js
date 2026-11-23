@@ -2,7 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    remotePatterns: [new URL('/assets/**', process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055')],
+    loader: 'custom',
+    loaderFile: './lib/image-loader.js',
+    deviceSizes: [400, 800, 1200],
+    imageSizes: [64],
   },
 };
 

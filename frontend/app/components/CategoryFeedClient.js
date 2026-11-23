@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { directusAssetUrl, getDirectusFileId } from '../../lib/directus';
+import { getDirectusFileId } from '../../lib/directus';
+import { mediaAssetUrl } from '../../lib/media-url.mjs';
 import { formatRelativePublishedAt } from '../../lib/datetime';
 import { categoryUrl } from '../../lib/site';
 
-function getCardImage(article) {
-  return article?.cover_image ? directusAssetUrl(getDirectusFileId(article.cover_image)) : '';
+function getCardImage(article, width = 400) {
+  const fileId = article?.cover_image ? getDirectusFileId(article.cover_image) : '';
+  return fileId ? mediaAssetUrl(fileId, width) : '';
 }
 
 export default function CategoryFeedClient({ category, initialArticles, initialHasMore = false, page = 1 }) {
@@ -12,6 +14,7 @@ export default function CategoryFeedClient({ category, initialArticles, initialH
   const slug = String(category?.slug || '').trim();
   const title = String(category?.name || '').trim() || slug || 'Categoría';
   const leadArticle = articles[0] || null;
+  const leadImage = leadArticle ? getCardImage(leadArticle, 800) : '';
   const secondaryArticles = articles.slice(1, 4);
   const listArticles = articles.slice(4);
 
@@ -31,7 +34,7 @@ export default function CategoryFeedClient({ category, initialArticles, initialH
             href={`/noticias/${leadArticle.slug}`}
             aria-label={leadArticle.title}
             className="categoryFeedHeroImage"
-            style={{ backgroundImage: getCardImage(leadArticle) ? `url(${getCardImage(leadArticle)})` : 'none' }}
+            style={{ backgroundImage: leadImage ? `url(${leadImage})` : 'none' }}
           />
           <div className="categoryFeedHeroBody">
             <div className="frontPageCategory">DESTACADA</div>
@@ -49,7 +52,7 @@ export default function CategoryFeedClient({ category, initialArticles, initialH
       {secondaryArticles.length ? (
         <div className="categoryFeedTopGrid">
           {secondaryArticles.map((article, index) => {
-            const image = getCardImage(article);
+            const image = getCardImage(article, 400);
             return (
               <Link key={article.id} href={`/noticias/${article.slug}`} className={index === 0 ? 'categoryFeedTopCard categoryFeedTopCardWide' : 'categoryFeedTopCard'}>
                 <div className="categoryFeedTopImage" style={{ backgroundImage: image ? `url(${image})` : 'none' }} />
@@ -67,7 +70,7 @@ export default function CategoryFeedClient({ category, initialArticles, initialH
       {listArticles.length ? (
         <div className="categoryFeedList">
           {listArticles.map((article) => {
-            const image = getCardImage(article);
+            const image = getCardImage(article, 400);
             return (
               <Link key={article.id} href={`/noticias/${article.slug}`} className="categoryFeedListItem">
                 <div className="categoryFeedListBody">

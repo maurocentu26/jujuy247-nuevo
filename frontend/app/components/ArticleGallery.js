@@ -2,22 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
+import { extractDirectusAssetId, mediaAssetUrl } from '../../lib/media-url.mjs';
 import './article-gallery.css';
 
 const MAX_THUMBS = 6;
 
-// Las fotos de Directus se piden ya achicadas; cualquier otra URL se usa tal cual.
+// Las fotos de Directus pasan por /api/media en WebP cacheado; cualquier otra URL se usa tal cual.
 function sized(src, width) {
-  try {
-    const url = new URL(src);
-    if (!/\/assets\/[^/]+$/.test(url.pathname)) return src;
-    url.searchParams.set('width', String(width));
-    url.searchParams.set('quality', '80');
-    url.searchParams.set('withoutEnlargement', 'true');
-    return url.href;
-  } catch {
-    return src;
-  }
+  const id = extractDirectusAssetId(src);
+  return id ? mediaAssetUrl(id, width) : src;
 }
 
 export default function ArticleGallery({ images }) {
@@ -80,7 +73,7 @@ export default function ArticleGallery({ images }) {
               onClick={() => open(i)}
               aria-label={`Ver foto ${i + 1} de ${total}${img.caption ? `: ${img.caption}` : ''}`}
             >
-              <img src={sized(img.src, 720)} alt="" loading="lazy" decoding="async" />
+              <img src={sized(img.src, 800)} alt="" loading="lazy" decoding="async" />
               {isLast ? <span className="article-gallery-more" aria-hidden="true">+{hidden}</span> : null}
             </button>
           );
@@ -110,7 +103,7 @@ export default function ArticleGallery({ images }) {
                   <FiChevronLeft size={28} aria-hidden="true" />
                 </button>
               ) : null}
-              <img key={current.src} src={sized(current.src, 1800)} alt={current.caption || `Foto ${index + 1} de ${total}`} />
+              <img key={current.src} src={sized(current.src, 1200)} alt={current.caption || `Foto ${index + 1} de ${total}`} />
               {total > 1 ? (
                 <button type="button" className="article-lightbox-btn article-lightbox-next" onClick={() => go(1)} aria-label="Foto siguiente">
                   <FiChevronRight size={28} aria-hidden="true" />
